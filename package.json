@@ -4,7 +4,8 @@
   "description": "Rest Web Server for Kenosha Bowmen website",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/djsteeber/kbwebsvr/issues"
   },
-  "homepage": "https://github.com/djsteeber/kbwebsvr"
+  "homepage": "https://github.com/djsteeber/kbwebsvr",
+  "dependencies": {
+    "restify": "^2.8.3",
+    "should": "^4.1.0",
+    "validator": "^3.22.0"
+  }
 }
