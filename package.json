@@ -1,0 +1,19 @@
+{
+  "name": "kbwebsvr",
+  "version": "0.9.0",
+  "description": "Rest Web Server for Kenosha Bowmen website",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:djsteeber/kbwebsvr.git"
+  },
+  "author": "Dale J. Steeber",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/djsteeber/kbwebsvr/issues"
+  },
+  "homepage": "https://github.com/djsteeber/kbwebsvr"
+}
