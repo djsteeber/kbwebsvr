@@ -52,6 +52,9 @@ describe ('json-schema-validator', function() {
       it('should return false because the items do not match', function() {
          assert.equal(false, validator.pointsTo('https://somedomain/rest/vx/person/5416ed1df853ab98040aa8a9', 'location'));
       });
+      it('should return true because the items points to a valid url', function() {
+         assert.equal(true, validator.pointsTo('http://192.168.56.101/rest/v1/locations/5443341f746174f505e2e67b', 'locations'));
+      });
    });
 
    describe ('#checkField()', function() {
@@ -125,8 +128,14 @@ describe ('json-schema-validator', function() {
      it('should check the schema for a valid rest link', function() {
         assert.equal(true, validator.validateInput(data3, schema3));
      });
-
-      
    });
+
+  describe('isObject()', function() {
+     var s = {name: {firstName: {isRequired:true}, lastName: {isRequired:true}, fullName: {isRequired:false}}};
+     var d = {name: {firstName: "Dale", lastName: "Steeber", fullName: "Dale Steeber"}};
+     it('should pass if the name is valid object', function() {
+         assert.equal(true, validator.isObject(d, s));
+     });
+  });
 
 });

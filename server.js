@@ -22,12 +22,12 @@ rmep.setConfig({db: mongojs('mongodb://localhost/archeryweb', [])
 // add security later
 // need to figure out how to link resources
 /* REST ENDPOINTS */
-rmep.createEndPoint(server, 'CRUD', {name: 'locations', basePath: '/rest/v1', schema: schemas.location});
-rmep.createEndPoint(server, 'CRUD', {name: 'events', basePath: '/rest/v1', schema: schemas.event});
-//rmep.createEndPoint(server, 'CRUD', {name: 'people', basePath: '/rest/v1'});
-//rmep.createEndPoint(server, 'CRUD', {name: 'people', basePath: '/rest/v1'});
-//rmep.createEndPoint(server, 'CRUD' , {name: 'location', basePath: '/rest/v1'
-//                                     ,schema: schemas.location});
+
+// add a rest point for all items in the schema map
+for (key in schemas) {
+    rmep.createEndPoint(server, 'CRUD'
+                   ,{name: key + 's', basePath: '/rest/v1', schema: schemas[key]});
+}
 
 /* REST ENDPOINTS */
 

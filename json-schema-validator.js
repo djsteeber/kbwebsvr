@@ -44,11 +44,16 @@ module.exports = function JSONSchemaValidator() {
       return result; 
    };
 
+   function isEmail(value, bool) {
+     console.log('isEmail not implemented');
+     return true;
+   }
+
    function isDate(value, bool) {
       return (value == null) || validator.isDate(value);
    }
    function isRequired(value, bool) {
-       return (((! validator.isNull(value)) && (validator.isLength(value, 1))) == bool);
+       return (! bool) || ((! validator.isNull(value)) && (validator.isLength(value, 1)));
    }
    function isString(value, bool) {
        return true;
@@ -95,6 +100,16 @@ module.exports = function JSONSchemaValidator() {
          
       return true;
    }
+
+   function isObject(value, item) {
+       for (var key in value) {
+          if (! validateInput(value[key], item[key])) {
+            return false;
+          }
+       }
+       return true;
+   }
+
    function isOneOf(value, item) {
       if ((value == null) || (value == undefined)) {
          return true;
@@ -139,7 +154,6 @@ module.exports = function JSONSchemaValidator() {
       if (! validator.isAlphanumeric(parts[parts.length-1])) {
          return false;
       }
-
       return true;
      }
 
@@ -157,6 +171,8 @@ module.exports = function JSONSchemaValidator() {
      isArrayOf: isArrayOf,
      isOneOf: isOneOf,
      pointsTo: pointsTo,
+     isObject: isObject,
+     isEmail: isEmail,
 
      checkField: checkField,
      validateInput: validateInput
