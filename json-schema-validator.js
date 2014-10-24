@@ -44,6 +44,9 @@ module.exports = function JSONSchemaValidator() {
       return result; 
    };
 
+   function isUnique(value, bool) {
+     return true;
+   }
    function isEmail(value, bool) {
      console.log('isEmail not implemented');
      return true;
@@ -174,6 +177,7 @@ module.exports = function JSONSchemaValidator() {
      pointsTo: pointsTo,
      isObject: isObject,
      isEmail: isEmail,
+     isUnique: isUnique,  // no-op function, isUnique is done in the collection creation
 
      checkField: checkField,
      validateInput: validateInput

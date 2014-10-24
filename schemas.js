@@ -28,11 +28,12 @@ var personsName = {firstName: {isString: true, isRequired:true}
                    ,fullName: {isString: true}};
 
 var user = {
-   login: {isString: true, isRequired: true}
+   login: {isString: true, isRequired: true, isUnique: true}
   ,name: {isObject: personsName}
-  ,email: {isEmail: true}
+  ,email: {isEmail: true, isUnique: true}
   ,roles: {isRequired:true, isOneOf: [['ADMIN', 'MEMBER', 'GUEST']]}
 };
 
 var schemaMap = {location:location, event: event, user: user};
 module.exports = schemaMap;
+

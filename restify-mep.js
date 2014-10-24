@@ -90,9 +90,14 @@ var updateItem = function (req, res, next) {
    var collection = getCollection(req);
 
    collection.update({_id: oid}, obj, {multi: false}, function (err, data) {
-      data.uri = basePath;
-      res.writeHead(200, JSON_CONTENT);
-      res.end(JSON.stringify(data));
+      if (err) {
+         res.writeHead(400, JSON_CONTENT);
+         res.end(JSON.stringify(err));
+      } else {
+         data.uri = basePath;
+         res.writeHead(200, JSON_CONTENT);
+         res.end(JSON.stringify(data));
+      }
    });
    return next();
 }
@@ -144,10 +149,15 @@ var newItem = function (req, res, next) {
    var collection = getCollection(req);
    var item = JSON.parse(req.body);
    collection.save(item, function (err, data) {
-      res.writeHead(201, JSON_CONTENT);
-      var basePath = protocol + '://' + req.headers.host + req._url.pathname;
-      data = addLocationToItem(data, basePath);
-      res.end(JSON.stringify(data));
+      if (err) {
+         res.writeHead(400, JSON_CONTENT);
+         res.end(JSON.stringify(err));
+      } else {
+         res.writeHead(201, JSON_CONTENT);
+         var basePath = protocol + '://' + req.headers.host + req._url.pathname;
+         data = addLocationToItem(data, basePath);
+         res.end(JSON.stringify(data));
+      }
    });
    return next();
 }
