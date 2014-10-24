@@ -102,12 +102,13 @@ module.exports = function JSONSchemaValidator() {
    }
 
    function isObject(value, item) {
-       for (var key in value) {
-          if (! validateInput(value[key], item[key])) {
-            return false;
-          }
-       }
-       return true;
+      if (value == null) {
+         return true;
+      }
+      if (! (typeof value == 'object')) {
+         return false;
+      }
+      return validateInput(value, item);
    }
 
    function isOneOf(value, item) {

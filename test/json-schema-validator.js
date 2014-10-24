@@ -131,8 +131,8 @@ describe ('json-schema-validator', function() {
    });
 
   describe('isObject()', function() {
-     var s = {name: {firstName: {isRequired:true}, lastName: {isRequired:true}, fullName: {isRequired:false}}};
-     var d = {name: {firstName: "Dale", lastName: "Steeber", fullName: "Dale Steeber"}};
+     var s = {firstName: {isRequired:true}, lastName: {isRequired:true}, fullName: {isRequired:false}};
+     var d = {firstName: "Dale", lastName: "Steeber", fullName: "Dale Steeber"};
      it('should pass if the name is valid object', function() {
          assert.equal(true, validator.isObject(d, s));
      });
