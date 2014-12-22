@@ -18,8 +18,12 @@
   },
   "homepage": "https://github.com/djsteeber/kbwebsvr",
   "dependencies": {
+    "crypto": "0.0.3",
     "restify": "^2.8.3",
+    "restify-oauth2": "^4.0.0",
     "should": "^4.1.0",
-    "validator": "^3.22.0"
+    "underscore": "^1.7.0",
+    "validator": "^3.22.0",
+    "winston": "^0.8.3"
   }
 }

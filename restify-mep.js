@@ -49,16 +49,18 @@ var mergeInto = function(target, source) {
  * handler for get on the collection
  */
 var getItems = function (req, res, next) {
+console.log("gettting items\n");
    var collection = getCollection(req);
    //console.log(req);   
    collection.find(req.params, function(err, items) {
       basePath = protocol + '://' + req.headers.host + req._url.pathname;
-
+//console.log(req);
       //add in location
       var data = addLocationTo(items, basePath); 
 
       res.writeHead(200, JSON_CONTENT);
       res.end(JSON.stringify(data));
+console.log("items sent: gettting items\n");
    });
    return next();
 };

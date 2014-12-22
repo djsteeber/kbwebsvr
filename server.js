@@ -3,14 +3,24 @@ var fs = require('fs');
 var mongojs = require('mongojs');
 var rmep = require('./restify-mep');
 var schemas = require('./schemas');
+//var restifyOAuth2 = require("restify-oauth2");
 
 // setup the server
-var server = restify.createServer();
+var server = restify.createServer({name: 'KBWEB SERVER', version: '1.0.0'});
+
+server.use(restify.authorizationParser());
 
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
-server.use(restify.bodyParser());
+//server.use(restify.authorizationParser());
+server.use(restify.bodyParser({mapParams: false}));
 
+// needed when webapp is from different domain is accessing this.:q
+
+server.use(restify.CORS());
+
+//var options = {};
+//restifyOAuth2.cc(server, options);
 
 //maxPoolSize  increase in production ?maxPoolSize=40
 // dont do this in test as it opens all for  connections
