@@ -44,9 +44,10 @@ module.exports = function JSONSchemaValidator() {
       return result; 
    };
 
-   function isUnique(value, bool) {
+   function noOp(value, bool) {
      return true;
    }
+
    function isEmail(value, bool) {
      console.log('isEmail not implemented');
      return true;
@@ -159,7 +160,14 @@ module.exports = function JSONSchemaValidator() {
          return false;
       }
       return true;
-     }
+     };
+
+   function isUnique(value, item) {
+      return true;
+   }
+   function isPassword(value, item) {
+      return true;
+   }
 
   return {
      // Error capture
@@ -178,6 +186,7 @@ module.exports = function JSONSchemaValidator() {
      isObject: isObject,
      isEmail: isEmail,
      isUnique: isUnique,  // no-op function, isUnique is done in the collection creation
+     isPassword: isPassword,  //no-op function, just used to hide the password on display
 
      checkField: checkField,
      validateInput: validateInput
