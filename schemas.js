@@ -27,7 +27,7 @@ var location = {
 
 var event = {
      name: reqString
-    ,event_type: {isRequired:true, isString:true, isOneOf: [['SHOOT', 'MEETING']]}
+    ,event_type: {isRequired:true, isString:true, isOneOf: [['SHOOT', 'MEETING', 'LEAGUE']]}
     ,location: {pointsTo: 'locations'}
     ,schedule: {isArrayOf: [schedule, 1]}
     ,flyer: {isString:true}
