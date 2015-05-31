@@ -12,6 +12,10 @@ exports.setConfig = function(rconfig) {
 }
 
 /* HELPER FUNCTIONS */
+function reqBodyAsObject(req) {
+   return (typeof req.body == 'object') ? req.body : JSON.parse(req.body);
+}
+
 function getCollection (req) {
    var collectionName = req.route.path.split("/")[3];
   
@@ -87,7 +91,7 @@ var getItem = function (req, res, next) {
  */
 var updateItem = function (req, res, next) {
    var basePath = protocol + '://' + req.headers.host + req._url.pathname;
-   var obj = (typeof req.body == 'object') ? req.body : JSON.parse(req.body);
+   var obj = reqBodyAsObject(req);
    var oid = mongojs.ObjectId(req.params.id);
    var collection = getCollection(req);
 
@@ -112,7 +116,7 @@ var updateItem = function (req, res, next) {
 var fetchAndMerge = function (req, res, next) {
    var collection = getCollection(req);
    var oid = mongojs.ObjectId(req.params.id);
-   var obj = JSON.parse(req.body);
+   var obj = reqBodyAsObject(req);
 
    // so, still getting use to closures in here.
    // not able to return out an object, so the methodology has to be done 
@@ -149,7 +153,8 @@ var delItem = function (req, res, next) {
 var newItem = function (req, res, next) {
 
    var collection = getCollection(req);
-   var item = JSON.parse(req.body);
+   var item = reqBodyAsObject(req);
+
    collection.save(item, function (err, data) {
       if (err) {
          res.writeHead(400, JSON_CONTENT);
@@ -170,10 +175,11 @@ var newItem = function (req, res, next) {
 var validateBody = function (schema) {
 
   return function(req, res, next) {
-    var obj = (typeof req.body == 'object') ? req.body : JSON.parse(req.body);
+    var obj = reqBodyAsObject(req);
     var v = new sv();
     var valid = v.validateInput(obj, schema);
     if (! valid) {
+       console.log("error");
        res.writeHead(400, JSON_CONTENT);
        res.end(JSON.stringify(v.getFieldErrors()));
        return;

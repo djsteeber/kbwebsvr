@@ -60,7 +60,14 @@ var userProfile = {
     ,skills : {isArrayOf : {name : reqString}}
 };
 
-var schemaMap = {location:location, event: event, user: user, userProfile : userProfile};
+var message = {
+     to: {isString: true, isRequired: true, isOneOf: [['ALL MEMBERS', 'BOARD MEMBERS', 'RANGE OFFICERS']]}
+    ,subject: {isString: true, isRequired: true}
+    ,body: {isString: true, isRequired: true}
+    ,sender: {pointsTo: 'users'}
+}
+
+var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message};
 module.exports = schemaMap;
 
 
