@@ -1,6 +1,8 @@
 var jwt = require('jwt-simple');
 var async = require('async');
 var _ = require('underscore');
+var phash = require('password-hash-and-salt');
+
 
 var JSON_CONTENT = {'Content-Type': 'application/json; charset=utf-8'};
 
@@ -73,7 +75,7 @@ function Auth(config) {
 
         var token = jwt.encode({
             exp: expires,
-            user: user.login,
+            user: {login: user.login, name: user.name, roles: (_.isArray(user.roles) ? user.roles : [ user.roles ]) },
             roles: (_.isArray(user.roles) ? user.roles : [ user.roles ])
         }, require('./secret.js')(), 'HS512');
 
@@ -105,10 +107,24 @@ function Auth(config) {
         var password = req.params.password || req.body.password || "";
 
         collection.findOne({"login": login}, function(err, user) {
-            if (user && user.password && (user.password == password)) {
-                if (params.success) {
-                    params.success(self.genToken(user, EXPIRE_NUM_DAYS));
-                }
+            if (user && user.password) {
+
+                phash(password).verifyAgainst(user.password, function(error, verified) {
+                    if (error)
+                        if (params.failure) {
+                            params.failure();
+                        }
+                    if (!verified) {
+                        if (params.failure) {
+                            params.failure();
+                        }
+                    } else {
+                        if (params.success) {
+                            params.success(self.genToken(user, EXPIRE_NUM_DAYS));
+                        }
+                    }
+                });
+
             } else {
                 if (params.failure) {
                     params.failure();
@@ -166,7 +182,7 @@ function Auth(config) {
         var token = getRequestToken(req);
         console.log("isLoggIn called")
 
-        return (token != undefined );
+        return token;
     };
 
     self.createEndPoints = function(server, basePath, loginCollection) {

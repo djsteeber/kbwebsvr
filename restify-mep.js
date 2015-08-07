@@ -13,6 +13,9 @@ exports.setConfig = function(rconfig) {
 
 /* HELPER FUNCTIONS */
 function reqBodyAsObject(req) {
+   if (typeof req.body == 'undefined') {
+      req.body = {};
+   }
    return (typeof req.body == 'object') ? req.body : JSON.parse(req.body);
 }
 
@@ -204,12 +207,27 @@ var displaySchema = function(schema) {
   };
 };
 
+var hashPassword = function(schema) {
+   return function (req, res, next) {
+      var obj = reqBodyAsObject(req);
+      //TODO change the check to get fields that have isPassword attribute set to true
+      //TODO UNTESTED
+      if (obj && obj.password) {
+         // salt and hash here
+         req.body = JSON.stringify(obj);
+      }
+      return next();
+   }
+};
+
 /**
  * creates end points
+ * TODO  check the schema, if the schema has a isPassword set to true, then and a hash/salt algorithm
  */
 exports.createEndPoint = function(server, epTypes, config) {
    var epName = config.basePath + '/' + config.name;
    var vc = validateBody(config.schema);
+   var hpwd = hashPassword(config.schema);
 
    var epTypeArray = epTypes.split("");
    for (var epInx in epTypeArray) {
@@ -219,7 +237,7 @@ exports.createEndPoint = function(server, epTypes, config) {
          if (typeof config.schema === "undefined") {
             server.post(epName, newItem);
          } else {
-            server.post(epName, vc, newItem);
+            server.post(epName, vc, hpwd, newItem);
          }
       } else if (epType == 'R') {
          console.log('adding read endpoint ' + epName);
@@ -239,3 +257,26 @@ exports.createEndPoint = function(server, epTypes, config) {
    server.get(epName + '.schema', displaySchema(config.schema));
 };
 
+exports.createSearchEndPoint = function(server, epconfig) {
+   var entities = ['users'];
+   var epName = epconfig.basePath + '/search';
+
+
+
+   server.get(epName, function(req, res, next) {
+      var item = reqBodyAsObject(req);
+      //var query = item.q;
+
+      var collectionName = 'users';  //TODO CHANGE THIS
+      var collection = config.db.collection(collectionName);
+
+      collection.find({}, function(err, docs) {
+         res.writeHead(200, JSON_CONTENT);
+         res.end(JSON.stringify(docs));
+
+      });
+
+
+   });
+
+};

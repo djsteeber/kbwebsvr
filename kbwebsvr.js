@@ -127,9 +127,12 @@ server.post("/auth/logout", function(req, res, next) {
 });
 
 server.get("/auth/login", function(req, res, next) {
+    var token = auth.isLoggedIn(req);
     if (auth.isLoggedIn(req)) {
         res.writeHead(200, JSON_CONTENT);
-        res.end(JSON.stringify({authenticated: true, message: "Authenticated"}));
+        token['authenticated'] = true;
+        token['message'] = 'Authenticated';
+        res.end(JSON.stringify(token));
     } else {
         res.writeHead(200, JSON_CONTENT);
         res.end(JSON.stringify({authenticated: false, message: "Not Authenticated"}));
@@ -144,7 +147,13 @@ for (var key in schemas) {
                    ,{name: key + 's', basePath: '/rest/v1', schema: schemas[key]});
 }
 
+rmep.createSearchEndPoint(server, {basePath: '/rest/v1'});
+
+
+
 auth.createEndPoints(server, '/auth', loginCollection);
+
+
 
 
 server.listen(3000, function() {
