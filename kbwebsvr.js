@@ -45,7 +45,7 @@ var auth = new Auth({db: mongodb_inst});
 //auth.secure( /^\/rest\/v1\/messageCenterMessages/g, 'GET', ['MEMBER', 'ADMIN']);
 
 server.use(function(req, res, next) {
-   console.log("here here");
+//   console.log("here here");
     var rtn;
 
     try {

@@ -30,8 +30,8 @@ var event = {
     ,event_type: {isRequired:true, isString:true, isOneOf: [['SHOOT', 'MEETING', 'LEAGUE']]}
     ,location: {pointsTo: 'locations'}
     ,schedule: {isArrayOf: [schedule, 1]}
-    ,flyer: {isString:true}
-    ,results_doc: {isString:true}
+    ,flyer: {isString:true} // change to points to document
+    ,results_doc: {isString:true}  // change to points to document
     ,description: reqString
 };
 
@@ -65,9 +65,20 @@ var message = {
     ,subject: {isString: true, isRequired: true}
     ,body: {isString: true, isRequired: true}
     ,sender: {pointsTo: 'users'}
-}
+};
 
-var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message};
+// make binary a base64 file, might look a other ways to handle this.  For now, not going to worry
+// may need to change the storage of the binary so it is not pulled each time
+// add document binary id might help
+var document = {
+     name: {isString: true, isRequired: true}
+    ,fileName: {isString: true, isRequired: true}
+    ,mimeType: {isString: true, isRequired: true, isOneOf :[['application/msword', 'application/pdf', 'application/excel']]}
+    ,fileType: {isString: true, isRequired: true, isOneOf : [['EVENT', 'RESULT', 'NEWSLETTER', 'MEETING', 'MEMBERS']]}
+    ,binaryPath: {isString: true}
+};
+
+var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message, document: document};
 module.exports = schemaMap;
 
 
