@@ -78,13 +78,19 @@ console.log("items sent: gettting items\n");
  */
 var getItem = function (req, res, next) {
    var collection = getCollection(req);
-   var oid = mongojs.ObjectId(req.params.id);
 
 
-   collection.findOne({"_id": oid}, function(err, events) {
-      res.writeHead(200, JSON_CONTENT);
-      res.end(JSON.stringify(events));
-   });
+   try {
+      var oid = mongojs.ObjectId(req.params.id);
+      collection.findOne({"_id": oid}, function (err, events) {
+         res.writeHead(200, JSON_CONTENT);
+         res.end(JSON.stringify(events));
+      });
+   } catch (exc) {
+      console.log(exc);
+      res.writeHead(404, JSON_CONTENT); // not found
+      res.end(JSON.stringify({message: 'Unable to find Object in ' + collection}));
+   }
    return next();
 }
 
@@ -118,35 +124,46 @@ var updateItem = function (req, res, next) {
  */
 var fetchAndMerge = function (req, res, next) {
    var collection = getCollection(req);
-   var oid = mongojs.ObjectId(req.params.id);
-   var obj = reqBodyAsObject(req);
 
    // so, still getting use to closures in here.
    // not able to return out an object, so the methodology has to be done 
    // inside.  weird to me.
-   collection.findOne({"_id": oid}, function(err, doc) {
-        if (err) {
-          res.writeHead(400, JSON_CONTENT);
-          res.end(JSON.stringify({message: 'Unable to find Object in ' + collection}));
-        } else {
-           req.body = mergeInto(doc, obj);
-           next();
-        }
-   });
+   try {
+      var oid = mongojs.ObjectId(req.params.id);
+      var obj = reqBodyAsObject(req);
+      collection.findOne({"_id": oid}, function (err, doc) {
+         if (err) {
+            res.writeHead(404, JSON_CONTENT);
+            res.end(JSON.stringify({message: 'Unable to find Object in ' + collection}));
+         } else {
+            req.body = mergeInto(doc, obj);
+            next();
+         }
+      });
+   } catch(exc) {
+      res.writeHead(404, JSON_CONTENT);
+      res.end(JSON.stringify({message: 'Unable to find Object in ' + collection}));
+   }
 }
 
 /**
  * handler used to delete an item referenced by the id on the url.
  */
 var delItem = function (req, res, next) {
-   var oid = mongojs.ObjectId(req.params.id);
    var collection = getCollection(req);
    console.log(req.params);
-   collection.remove({"_id": oid}, function (err, data) {
-      res.writeHead(200, JSON_CONTENT);
-      res.end(JSON.stringify(true));
-   });
-   return next();
+   try {
+      var oid = mongojs.ObjectId(req.params.id);
+      collection.remove({"_id": oid}, function (err, data) {
+         res.writeHead(200, JSON_CONTENT);
+         res.end(JSON.stringify(true));
+         return next();
+      });
+   } catch (exc) {
+      res.writeHead(404, JSON_CONTENT);
+      res.end(JSON.stringify({message: 'Unable to find Object in ' + collection}));
+      return next();
+   }
 }
 
 //TODO:  do not just return the data, but also send back a location

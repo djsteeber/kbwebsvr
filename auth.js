@@ -1,3 +1,13 @@
+/**
+ * TODO:  Replace the code in here with passport.js.  This will allow for multiple authentication methods.
+ *        Still need to associate user with roles.  Start with local strategy and work up from there.
+ *        Will need a change in how things are called.  I still like the filter approach as opposed to putting it on
+ *        each endpoint call.  Routing is a little different.  Just need to send back an response code, so the
+ *        1 page front end can respond appropriately.  401 is for unauthenticated.  403 is for authed but
+ *        insufficient priviledges
+ * @type {*|exports|module.exports}
+ */
+
 var jwt = require('jwt-simple');
 var async = require('async');
 var _ = require('underscore');

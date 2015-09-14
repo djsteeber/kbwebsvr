@@ -24,6 +24,8 @@
     "mocha": "^2.2.4",
     "mongojs": "^0.18.1",
     "node-cache": "^2.1.1",
+    "passport": "^0.3.0",
+    "passport-http": "^0.3.0",
     "password-hash-and-salt": "^0.1.2",
     "restify": "^3.0.2",
     "restify-cookies": "^0.1.1",
