@@ -58,8 +58,11 @@ var mergeInto = function(target, source) {
 var getItems = function (req, res, next) {
 console.log("gettting items\n");
    var collection = getCollection(req);
+   var query = reqBodyAsObject(req);
+   // right now just use all of the request body as the query object
+   // might want to add in field selection, but that is an add on as the front end can ignore
    //console.log(req);   
-   collection.find(req.params, function(err, items) {
+   collection.find(query, function(err, items) {
       basePath = protocol + '://' + req.headers.host + req._url.pathname;
 //console.log(req);
       //add in location
@@ -239,7 +242,7 @@ var hashPassword = function(schema) {
 
 /**
  * creates end points
- * TODO  check the schema, if the schema has a isPassword set to true, then and a hash/salt algorithm
+ * TODO  check the schema, if the schema has a isPassword set to true, then add a hash/salt algorithm
  */
 exports.createEndPoint = function(server, epTypes, config) {
    var epName = config.basePath + '/' + config.name;
@@ -274,15 +277,13 @@ exports.createEndPoint = function(server, epTypes, config) {
    server.get(epName + '.schema', displaySchema(config.schema));
 };
 
+//TODO: This needs a lot of work.
 exports.createSearchEndPoint = function(server, epconfig) {
    var entities = ['users'];
    var epName = epconfig.basePath + '/search';
 
-
-
    server.get(epName, function(req, res, next) {
       var item = reqBodyAsObject(req);
-      //var query = item.q;
 
       var collectionName = 'users';  //TODO CHANGE THIS
       var collection = config.db.collection(collectionName);
@@ -290,10 +291,6 @@ exports.createSearchEndPoint = function(server, epconfig) {
       collection.find({}, function(err, docs) {
          res.writeHead(200, JSON_CONTENT);
          res.end(JSON.stringify(docs));
-
       });
-
-
    });
-
 };
