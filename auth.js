@@ -23,6 +23,7 @@ function expiresIn(numDays) {
     var dateObj = new Date();
     return dateObj.setDate(dateObj.getDate() + numDays);
 }
+
 function fetchRoles(authMap, method, url) {
     var ary = authMap[method];
     if (ary == undefined) {
@@ -53,9 +54,10 @@ function getRequestToken(req) {
             token = null;
         }
     } catch(err) {
-        console.log("error with token " + err);
-        console.log(token);
-        console.log(typeof token);
+        //console.log("error with token " + err);
+        //console.log(token);
+        //console.log(typeof token);
+        token = null;
     }
     return token;
 }
@@ -190,7 +192,7 @@ function Auth(config) {
 
     self.isLoggedIn = function(req) {
         var token = getRequestToken(req);
-        console.log("isLoggIn called")
+        console.log("isLoggIn called here")
 
         return token;
     };

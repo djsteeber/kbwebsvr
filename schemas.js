@@ -33,6 +33,7 @@ var event = {
     ,flyer: {isString:true} // change to points to document
     ,results_doc: {isString:true}  // change to points to document
     ,description: reqString
+    ,status: {isRequired:true, isString:true, isOneOf: [['PENDING', 'APPROVED']]}
 };
 
 var personsName = {

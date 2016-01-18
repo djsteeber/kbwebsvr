@@ -13,28 +13,38 @@ exports.setConfig = function(rconfig) {
 
 /* HELPER FUNCTIONS */
 function reqBodyAsObject(req) {
-   if (typeof req.body == 'undefined') {
-      req.body = {};
+   var obj;
+   try {
+      obj = JSON.parse(req.body);
+   } catch (exc) {
+      obj = {};
    }
-   return (typeof req.body == 'object') ? req.body : JSON.parse(req.body);
+   return obj;
+   //if (typeof req.body == 'undefined') {
+   //   req.body = {};
+   //}
+   //return (typeof req.body == 'object') ? req.body : JSON.parse(req.body);
 }
 
 function getCollection (req) {
-   var collectionName = req.route.path.split("/")[3];
+   //TODO:  2 is hard coded due to /rest/collection.  Need to change this to not hard code based
+   // on base uri
+   var collectionName = req.route.path.split("/")[2];
   
    return (collectionName != null) ? config.db.collection(collectionName) : null;
 }
 
-function addLocationTo(items, basePath) {
+function addLocationTo(items, req) {
    var data = [];
    for (var n in items) {
-      items[n].uri = basePath + '/' + items[n]._id;
-      data[n] = items[n];
+      data[n] = addLocationToItem(items[n], req);
    }
    return data;
 };
 
-function addLocationToItem(item, basePath) {
+function addLocationToItem(item, req) {
+   basePath = protocol + '://' + req.headers.host + req._url.pathname;
+
    item.uri = basePath + '/' + item._id;
    return item;
 };
@@ -63,16 +73,17 @@ console.log("gettting items\n");
    // might want to add in field selection, but that is an add on as the front end can ignore
    //console.log(req);   
    collection.find(query, function(err, items) {
-      basePath = protocol + '://' + req.headers.host + req._url.pathname;
+      //TODO:  add in error handling
+
 //console.log(req);
       //add in location
-      var data = addLocationTo(items, basePath); 
+      var data = addLocationTo(items, req);
 
       res.writeHead(200, JSON_CONTENT);
       res.end(JSON.stringify(data));
-console.log("items sent: gettting items\n");
+      console.log("items sent: gettting items\n");
+      return next();
    });
-   return next();
 };
 
 
@@ -81,7 +92,6 @@ console.log("items sent: gettting items\n");
  */
 var getItem = function (req, res, next) {
    var collection = getCollection(req);
-
 
    try {
       var oid = mongojs.ObjectId(req.params.id);
@@ -169,7 +179,6 @@ var delItem = function (req, res, next) {
    }
 }
 
-//TODO:  do not just return the data, but also send back a location
 /**
  * handler to add a new item to the collection
  */
@@ -184,8 +193,7 @@ var newItem = function (req, res, next) {
          res.end(JSON.stringify(err));
       } else {
          res.writeHead(201, JSON_CONTENT);
-         var basePath = protocol + '://' + req.headers.host + req._url.pathname;
-         data = addLocationToItem(data, basePath);
+         data = addLocationToItem(data, req);
          res.end(JSON.stringify(data));
       }
    });

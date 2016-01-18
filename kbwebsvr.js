@@ -128,7 +128,7 @@ server.post("/auth/logout", function(req, res, next) {
 
 server.get("/auth/login", function(req, res, next) {
     var token = auth.isLoggedIn(req);
-    if (auth.isLoggedIn(req)) {
+    if (token) {
         res.writeHead(200, JSON_CONTENT);
         token['authenticated'] = true;
         token['message'] = 'Authenticated';
@@ -144,10 +144,10 @@ server.get("/auth/login", function(req, res, next) {
 // add a rest point for all items in the schema map
 for (var key in schemas) {
     rmep.createEndPoint(server, 'CRUD'
-                   ,{name: key + 's', basePath: '/rest/v1', schema: schemas[key]});
+                   ,{name: key + 's', basePath: '/rest', schema: schemas[key]});
 }
 
-rmep.createSearchEndPoint(server, {basePath: '/rest/v1'});
+rmep.createSearchEndPoint(server, {basePath: '/rest'});
 
 
 
