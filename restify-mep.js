@@ -1,6 +1,8 @@
 var mongojs = require('mongojs');
 var sv = require('./json-schema-validator');
+var passwordhasher = require('password-hash-and-salt');
 
+//change to bcyrpt
 
 var JSON_CONTENT = {'Content-Type': 'application/json; charset=utf-8'};
 
@@ -13,9 +15,15 @@ exports.setConfig = function(rconfig) {
 
 /* HELPER FUNCTIONS */
 function reqBodyAsObject(req) {
-   var obj;
+   var obj = {};
+   var x = typeof req.body;
+
    try {
-      obj = JSON.parse(req.body);
+      if (req && req.body && (typeof req.body != 'object')) {
+         obj = JSON.parse(req.body);
+      } else {
+         obj = req.body;
+      }
    } catch (exc) {
       obj = {};
    }
@@ -241,10 +249,17 @@ var hashPassword = function(schema) {
       //TODO change the check to get fields that have isPassword attribute set to true
       //TODO UNTESTED
       if (obj && obj.password) {
-         // salt and hash here
-         req.body = JSON.stringify(obj);
+
+
+         passwordhasher(obj.password).hash(function(error, hash) {
+            if(error)
+               throw new Error('Something went wrong!');
+
+            obj.password = hash;
+            req.body = obj;
+            return next();
+         });
       }
-      return next();
    }
 };
 
