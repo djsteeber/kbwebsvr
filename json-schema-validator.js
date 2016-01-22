@@ -97,8 +97,16 @@ module.exports = function JSONSchemaValidator() {
 
       // item is the schema, so call validateInput on the schema against each value in the array
       for (var inx in value) {
-         if (! validateInput(value[inx], item)) { 
-            return false;
+         var testVal = value[inx];
+         if (typeof testVal == 'object') {
+            if (!validateInput(value[inx], item)) {
+               return false;
+            }
+         } else {
+            //might be an array of literals, string or numbers
+            if (! checkField(value[inx], item)) {
+               return false;
+            }
          }
       }
          

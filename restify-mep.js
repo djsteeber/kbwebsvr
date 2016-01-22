@@ -191,9 +191,10 @@ var delItem = function (req, res, next) {
  * handler to add a new item to the collection
  */
 var newItem = function (req, res, next) {
-
+console.log('adding new item');
    var collection = getCollection(req);
    var item = reqBodyAsObject(req);
+   console.log('adding to collection');
 
    collection.save(item, function (err, data) {
       if (err) {
@@ -214,6 +215,7 @@ var newItem = function (req, res, next) {
 var validateBody = function (schema) {
 
   return function(req, res, next) {
+     console.log('validating body');
     var obj = reqBodyAsObject(req);
     var v = new sv();
     var valid = v.validateInput(obj, schema);
@@ -223,6 +225,8 @@ var validateBody = function (schema) {
        res.end(JSON.stringify(v.getFieldErrors()));
        return;
     }
+     console.log('validating body complete');
+
     return next();
   }
 }
@@ -257,9 +261,9 @@ var hashPassword = function(schema) {
 
             obj.password = hash;
             req.body = obj;
-            return next();
          });
       }
+      return next();
    }
 };
 

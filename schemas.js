@@ -16,6 +16,11 @@ var schedule = {
     ,end: {isRequired:true, isTime:true}
 };
 
+var scheduleTime = {
+     start: {isRequired:true, isTime:true}
+    ,end: {isRequired:false, isTime:true}
+};
+
 var location = {
      name: reqString
     ,address: reqString
@@ -25,6 +30,28 @@ var location = {
     ,phone: {isArrayOf: phoneType}
 };
 
+/* do not mix events.  keep each one distinct
+   shoot, meeting, work party.
+   don't care if they have a lot in common, right now
+   maybe work on an inheritence type schema
+ {name: 'Phantom Pig Shoot', date: 'January 23-24, 2016', times: 'Registration @ 8am, Shoot 8:30am - 3pm', info: 'Food, Bar, 3D Targets', link: '#',
+ {name: 'Cricket Shoot', date: 'February 6, 2016', times: 'Registration @ 8am, Shoot 8:30am - 3pm', info: 'Food, Bar', link: '#'},
+
+
+ */
+var shoot = {
+     name: reqString
+    ,description: reqString
+    ,dateText: reqString
+    ,timeText: reqString
+    ,shortDescription: reqString
+    ,shootType: {isArrayOf: [reqString, 1]}
+    ,schedule: {isArrayOf: [schedule, 1]}
+    ,flyer: {isString:true} // change to points to document
+    ,results: {isString:true}  // change to points to document
+};
+
+/* making this simple, assume everything is at KB location, refactor if needed */
 var event = {
      name: reqString
     ,event_type: {isRequired:true, isString:true, isOneOf: [['SHOOT', 'MEETING', 'LEAGUE', 'WORKPARTY']]}
@@ -35,6 +62,8 @@ var event = {
     ,description: reqString
     ,status: {isRequired:true, isString:true, isOneOf: [['PENDING', 'APPROVED']]}
 };
+
+
 
 var personsName = {
      firstName: reqString
@@ -79,7 +108,7 @@ var document = {
     ,binaryPath: {isString: true}
 };
 
-var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message, document: document};
+var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message, document: document, shoot: shoot};
 module.exports = schemaMap;
 
 

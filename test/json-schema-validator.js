@@ -138,4 +138,16 @@ describe ('json-schema-validator', function() {
      });
   });
 
+    describe('#arryOfStrings()', function() {
+        var schema = {name: {isString: true, isRequired: true}
+            ,event_type: {isArrayOf: [{isString: true}, 1]}
+        };
+
+        var data = {name: 'Some Event', event_type: ['SHOOT', '3D'] };
+        it('should return true if the data is valid based on the schema', function() {
+            assert.equal(true, validator.validateInput(data, schema));
+        });
+
+    });
+
 });
