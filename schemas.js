@@ -5,6 +5,8 @@ var reqString = {
     ,isString: true
 };
 
+var reqDate = {isRequired: true, isDate: true};
+
 var phoneType = {
      phoneType: {isRequired: true}
     ,phoneNumber: {isPhoneNumber: true}
@@ -45,9 +47,9 @@ var shoot = {
     ,dateText: reqString
     ,timeText: reqString
     ,shortDescription: reqString
-    ,shootType: {isArrayOf: [reqString, 1]}
-    ,schedule: {isArrayOf: [schedule, 1]}
-    ,flyer: {isString:true} // change to points to document
+    ,shootType: reqString
+    ,schedule: {isArrayOf: [schedule, 0]} //change to 1 once the ready to move to date times
+    ,flyer: {isRequired: false, isFile: true} // change to points to document
     ,results: {isString:true}  // change to points to document
 };
 
@@ -92,8 +94,8 @@ var userProfile = {
 
 var message = {
      to: {isString: true, isRequired: true, isOneOf: [['ALL MEMBERS', 'BOARD MEMBERS', 'RANGE OFFICERS']]}
-    ,subject: {isString: true, isRequired: true}
-    ,body: {isString: true, isRequired: true}
+    ,subject: reqString
+    ,body: reqString
     ,sender: {pointsTo: 'users'}
 };
 
@@ -101,14 +103,23 @@ var message = {
 // may need to change the storage of the binary so it is not pulled each time
 // add document binary id might help
 var document = {
-     name: {isString: true, isRequired: true}
-    ,fileName: {isString: true, isRequired: true}
-    ,mimeType: {isString: true, isRequired: true, isOneOf :[['application/msword', 'application/pdf', 'application/excel']]}
-    ,fileType: {isString: true, isRequired: true, isOneOf : [['EVENT', 'RESULT', 'NEWSLETTER', 'MEETING', 'MEMBERS']]}
-    ,binaryPath: {isString: true}
+     name: reqString
+    ,file: {isFile: true, isRequired: true}
 };
 
-var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message, document: document, shoot: shoot};
+
+
+//This is good for now, TODO need to learn about dates
+var announcement = {
+    title: reqString
+    ,text: reqString
+    ,startDate: reqDate
+    ,endDate: reqDate
+};
+
+
+var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message, document: document
+    , shoot: shoot, announcement: announcement};
 module.exports = schemaMap;
 
 

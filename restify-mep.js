@@ -1,6 +1,8 @@
 var mongojs = require('mongojs');
 var sv = require('./json-schema-validator');
 var passwordhasher = require('password-hash-and-salt');
+var fs = require('fs');
+var sanitizefn = require("sanitize-filename");
 
 //change to bcyrpt
 
@@ -13,8 +15,19 @@ exports.setConfig = function(rconfig) {
   protocol = ((typeof config.secure != 'undefined') && config.secure) ? 'https' : 'http';
 }
 
+function createJSONFile(reqFile) {
+   return {name: reqFile.name, path: reqFile.path, size: reqFile.size, type: reqFile.type}
+}
+
 /* HELPER FUNCTIONS */
-function reqBodyAsObject(req) {
+/* change this to get request data.  if not data element of request is found, it will parse out the body and add it to
+  the data field of the request object.
+ */
+function getRequestData(req) {
+   if (req.data) {
+      return req.data;
+   }
+
    var obj = {};
    var x = typeof req.body;
 
@@ -24,20 +37,30 @@ function reqBodyAsObject(req) {
       } else {
          obj = req.body;
       }
+      if (req.files) {
+         for (var fkey in req.files) {
+            var jsonFile = createJSONFile(req.files[fkey]);
+            obj[fkey] = jsonFile;
+         }
+      }
    } catch (exc) {
       obj = {};
    }
+   req.data = obj;
+
    return obj;
-   //if (typeof req.body == 'undefined') {
-   //   req.body = {};
-   //}
-   //return (typeof req.body == 'object') ? req.body : JSON.parse(req.body);
+}
+
+function getCollectionName(req) {
+   var collectionName = req.route.path.split("/")[2].toLowerCase();
+
+   return collectionName;
 }
 
 function getCollection (req) {
    //TODO:  2 is hard coded due to /rest/collection.  Need to change this to not hard code based
    // on base uri
-   var collectionName = req.route.path.split("/")[2];
+   var collectionName = getCollectionName(req);
   
    return (collectionName != null) ? config.db.collection(collectionName) : null;
 }
@@ -76,7 +99,7 @@ var mergeInto = function(target, source) {
 var getItems = function (req, res, next) {
 console.log("gettting items\n");
    var collection = getCollection(req);
-   var query = reqBodyAsObject(req);
+   var query = getRequestData(req);
    // right now just use all of the request body as the query object
    // might want to add in field selection, but that is an add on as the front end can ignore
    //console.log(req);   
@@ -121,7 +144,7 @@ var getItem = function (req, res, next) {
  */
 var updateItem = function (req, res, next) {
    var basePath = protocol + '://' + req.headers.host + req._url.pathname;
-   var obj = reqBodyAsObject(req);
+   var obj = getRequestData(req);
    var oid = mongojs.ObjectId(req.params.id);
    var collection = getCollection(req);
 
@@ -140,7 +163,7 @@ var updateItem = function (req, res, next) {
 
 /**
  * will fetch the obj referenced by the id on the url.
- *   merge the body into the object and set the req.body value to the
+ *   merge the body into the object fand set the req.body value to the
  *     merged value
  */
 var fetchAndMerge = function (req, res, next) {
@@ -151,7 +174,7 @@ var fetchAndMerge = function (req, res, next) {
    // inside.  weird to me.
    try {
       var oid = mongojs.ObjectId(req.params.id);
-      var obj = reqBodyAsObject(req);
+      var obj = getRequestData(req);
       collection.findOne({"_id": oid}, function (err, doc) {
          if (err) {
             res.writeHead(404, JSON_CONTENT);
@@ -169,6 +192,7 @@ var fetchAndMerge = function (req, res, next) {
 
 /**
  * handler used to delete an item referenced by the id on the url.
+ * TODO: Later, May need to access the object so files are cleaned up
  */
 var delItem = function (req, res, next) {
    var collection = getCollection(req);
@@ -185,18 +209,69 @@ var delItem = function (req, res, next) {
       res.end(JSON.stringify({message: 'Unable to find Object in ' + collection}));
       return next();
    }
+};
+
+function copyFileSync(source, target) {
+   try {
+      var data = fs.readFileSync(source);
+      console.log(' data size read = ' + data.length);
+      fs.writeFileSync(target, data);
+   } catch(fswriteerr) {
+      console.log('error writing file' + fswriteerr);
+   }
+   console.log("done with copy of file" + source + ' to ' + target);
+};
+
+function convertAndStoreFiles(item, collectionName) {
+   var fileConfig = config.file[collectionName];
+
+   for (var field in item) {
+      console.log(field);
+      if ((item[field].name != undefined) && (item[field].path != undefined)) {
+         var fileName = sanitizefn(item[field].name);
+         fileName = fileName.replace(/ /g,"_");
+
+         try {
+            try {
+               fs.unlinkSync(fileConfig.dir + '/' + fileName);
+            } catch (removeFileErr) {
+               //ignore
+            }
+
+            copyFileSync(item[field].path, fileConfig.dir + '/' + fileName);
+
+            //fs.writecopySync(item[field].path, fileConfig.dir + '/' + fileName, {clobber: true});
+         } catch (err) {
+            console.log('error copying file');
+         }
+
+         item[field] = {url: fileConfig.urlRoot + '/' + fileName, name: fileName, type: item[field].type};
+         //copy the file to the new directory
+         console.log('new file will be ' + item[field].name)
+      }
+   }
+   return item;
 }
+
 
 /**
  * handler to add a new item to the collection
  */
 var newItem = function (req, res, next) {
 console.log('adding new item');
+   var collectionName = getCollectionName(req);
    var collection = getCollection(req);
-   var item = reqBodyAsObject(req);
+   var item = getRequestData(req);
    console.log('adding to collection');
 
+
+
+   //need to put in the chain of callbacks
+   // here we want to move the file, and the call
+   item = convertAndStoreFiles(item, collectionName);
+
    collection.save(item, function (err, data) {
+      console.log("done with save of item");
       if (err) {
          res.writeHead(400, JSON_CONTENT);
          res.end(JSON.stringify(err));
@@ -205,8 +280,8 @@ console.log('adding new item');
          data = addLocationToItem(data, req);
          res.end(JSON.stringify(data));
       }
+      return next();
    });
-   return next();
 }
 
 /**
@@ -216,7 +291,7 @@ var validateBody = function (schema) {
 
   return function(req, res, next) {
      console.log('validating body');
-    var obj = reqBodyAsObject(req);
+    var obj = getRequestData(req);
     var v = new sv();
     var valid = v.validateInput(obj, schema);
     if (! valid) {
@@ -249,7 +324,7 @@ var displaySchema = function(schema) {
 
 var hashPassword = function(schema) {
    return function (req, res, next) {
-      var obj = reqBodyAsObject(req);
+      var obj = getRequestData(req);
       //TODO change the check to get fields that have isPassword attribute set to true
       //TODO UNTESTED
       if (obj && obj.password) {
@@ -310,7 +385,7 @@ exports.createSearchEndPoint = function(server, epconfig) {
    var epName = epconfig.basePath + '/search';
 
    server.get(epName, function(req, res, next) {
-      var item = reqBodyAsObject(req);
+      var item = getRequestData(req);
 
       var collectionName = 'users';  //TODO CHANGE THIS
       var collection = config.db.collection(collectionName);

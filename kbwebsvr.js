@@ -23,7 +23,8 @@ var mongodb_inst = mongojs('mongodb://localhost/archeryweb', []);
 //maxPoolSize  increase in production ?maxPoolSize=40
 // dont do this in test as it opens all for  connections
 rmep.setConfig({db: mongodb_inst
-               ,secure: false});
+               ,secure: false
+               ,file: {shoots: {dir: '/home/dsteeber/dev/kbweb/src/misc_docs/shoots', urlRoot: '/misc_docs/shoots'}}});
 
 // notes might change crud to role based
 // {read: open, create: admin, update:admin}
@@ -149,10 +150,9 @@ for (var key in schemas) {
 
 rmep.createSearchEndPoint(server, {basePath: '/rest'});
 
-
-
 auth.createEndPoints(server, '/auth', loginCollection);
 
+// right here need to create a document resource, instead of going through the main one
 
 
 

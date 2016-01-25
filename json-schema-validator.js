@@ -177,6 +177,34 @@ module.exports = function JSONSchemaValidator() {
       return true;
    }
 
+   /*
+   isFile is an object that containsthat contains either a multi part file from the request
+   or a json object equivalent.
+
+    return {name: reqFile.name, tempPath: reqFile.path, size: reqFile.size, type: reqFile.type, lastModifiedDate: req.lastModifiedDate}
+
+    */
+   function isFile(value, item) {
+      if ((value == null) || (value == undefined)) {
+         return true;
+      }
+      if (typeof value != 'object') {
+         return false;
+      }
+
+      //match keys on the objects
+      if ((value.name == null) || (value.name == undefined)) {
+         return false;
+      }
+
+      if ((value.tempPath != null) && (value.tempPath != undefined)) {
+
+
+      }
+
+      return true;
+   }
+
   return {
      // Error capture
      getFieldErrors: function() {
@@ -195,7 +223,7 @@ module.exports = function JSONSchemaValidator() {
      isEmail: isEmail,
      isUnique: isUnique,  // no-op function, isUnique is done in the collection creation
      isPassword: isPassword,  //no-op function, just used to hide the password on display
-
+     isFile: isFile,
      checkField: checkField,
      validateInput: validateInput
   };
