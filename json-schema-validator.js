@@ -38,7 +38,8 @@ module.exports = function JSONSchemaValidator() {
          }
          result = f.apply(null, parms);
          if (! result) {
-            addFieldError(fieldName, fieldName + ' failed ' + fn + ' check');
+            addFieldError(fieldName, fieldName + ' failed ' + fn + ' check on value' + value);
+            addFieldError(fieldName, fieldName + ' failed ' + fn + ' check on value' + value);
          }
       }
       return result; 
@@ -54,7 +55,38 @@ module.exports = function JSONSchemaValidator() {
    }
 
    function isDate(value, bool) {
-      return (value == null) || validator.isDate(value);
+      if (value == null) {
+         return true;
+      }
+
+      //validator isDate does not work, because a fill date is not passed in.
+      // we dont care about this.  we are just going to store year, month date
+      try {
+         var dtParts = value.split('-');
+         if (dtParts.length != 3) {
+            return false;
+         }
+
+         dtParts = dtParts.map(function (part) {
+            return parseInt(part);
+         });
+
+         var dt = new Date(dtParts[0], dtParts[1] - 1, dtParts[2]);
+         if (dt.getFullYear() != dtParts[0]) {
+            return false;
+         }
+         if (dt.getMonth() != (dtParts[1]-1)) {
+            return false;
+         }
+         if (dt.getDate() != (dtParts[2])) {
+            return false;
+         }
+      } catch (dtParseErr) {
+         return false;
+      }
+
+
+      return true;
    }
    function isRequired(value, bool) {
        return (! bool) || ((! validator.isNull(value)) && (validator.isLength(value, 1)));
@@ -97,8 +129,16 @@ module.exports = function JSONSchemaValidator() {
 
       // item is the schema, so call validateInput on the schema against each value in the array
       for (var inx in value) {
-         if (! validateInput(value[inx], item)) { 
-            return false;
+         var testVal = value[inx];
+         if (typeof testVal == 'object') {
+            if (!validateInput(value[inx], item)) {
+               return false;
+            }
+         } else {
+            //might be an array of literals, string or numbers
+            if (! checkField(value[inx], item)) {
+               return false;
+            }
          }
       }
          
@@ -169,6 +209,34 @@ module.exports = function JSONSchemaValidator() {
       return true;
    }
 
+   /*
+   isFile is an object that containsthat contains either a multi part file from the request
+   or a json object equivalent.
+
+    return {name: reqFile.name, tempPath: reqFile.path, size: reqFile.size, type: reqFile.type, lastModifiedDate: req.lastModifiedDate}
+
+    */
+   function isFile(value, item) {
+      if ((value == null) || (value == undefined)) {
+         return true;
+      }
+      if (typeof value != 'object') {
+         return false;
+      }
+
+      //match keys on the objects
+      if ((value.name == null) || (value.name == undefined)) {
+         return false;
+      }
+
+      if ((value.tempPath != null) && (value.tempPath != undefined)) {
+
+
+      }
+
+      return true;
+   }
+
   return {
      // Error capture
      getFieldErrors: function() {
@@ -187,7 +255,7 @@ module.exports = function JSONSchemaValidator() {
      isEmail: isEmail,
      isUnique: isUnique,  // no-op function, isUnique is done in the collection creation
      isPassword: isPassword,  //no-op function, just used to hide the password on display
-
+     isFile: isFile,
      checkField: checkField,
      validateInput: validateInput
   };

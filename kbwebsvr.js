@@ -23,7 +23,8 @@ var mongodb_inst = mongojs('mongodb://localhost/archeryweb', []);
 //maxPoolSize  increase in production ?maxPoolSize=40
 // dont do this in test as it opens all for  connections
 rmep.setConfig({db: mongodb_inst
-               ,secure: false});
+               ,secure: false
+               ,file: {shoots: {dir: '/home/dsteeber/dev/kbweb/src/misc_docs/shoots', urlRoot: '/misc_docs/shoots'}}});
 
 // notes might change crud to role based
 // {read: open, create: admin, update:admin}
@@ -35,8 +36,28 @@ rmep.setConfig({db: mongodb_inst
 var auth = new Auth({db: mongodb_inst});
 
 // secure all of the write / delete / update endpoints
+/// testing, turning off the auth functionality check
 ['POST', 'PUT', 'DELETE'].forEach(function(method) {
     auth.secure( /^\/rest\/.*/g, method, ['ADMIN']);
+});
+
+
+// add auth secure to message center get
+//auth.secure( /^\/rest\/v1\/messageCenterMessages/g, 'GET', ['MEMBER', 'ADMIN']);
+
+server.use(function(req, res, next) {
+//   console.log("here here");
+    var rtn;
+
+    try {
+        rtn = next();
+    } catch (exc) {
+        console.log(exc);
+
+        res.writeHead(401, JSON_CONTENT);
+        res.end(JSON.stringify(exc));
+    }
+    return rtn;
 });
 
 
@@ -53,12 +74,15 @@ server.use(function(req, res, next) {
         return next();
     } else {
         // send back not logged in unauth
-        res.writeHead(400, JSON_CONTENT);
+        res.writeHead(401, JSON_CONTENT);
         res.end(JSON.stringify({message: 'user not logged in'}));
     }
 });
 
+server.use(auth.restifyPlugin);
+
 var loginCollection = mongodb_inst.collection("users");
+
 server.post("/auth/login", function(req, res, next) {
    console.log("login post called");
    auth.login({
@@ -69,10 +93,10 @@ server.post("/auth/login", function(req, res, next) {
 
             res.setCookie('token', results.token, {
                 path: '/',
-                maxAge: 3600,
+                maxAge: 86400, //one day 60*60*24
                // domain: 'localhost',
                 secure: false,
-                httpOnly: false
+                httpOnly: true
             });
 
             res.writeHead(200, JSON_CONTENT);
@@ -80,12 +104,16 @@ server.post("/auth/login", function(req, res, next) {
             return next();
         },
         failure: function() {
-            res.writeHead(400, JSON_CONTENT);
+            res.writeHead(401, JSON_CONTENT);
             res.end(JSON.stringify({message: 'Not Authorized'}));
             return next();
         }
+
     });
 });
+
+
+//TODO:  Not really removing the cookie, may need to store locally, wonder if the results.token mismatch on the unset is messing it up?  I do see the date change
 
 server.post("/auth/logout", function(req, res, next) {
    res.setCookie('token', '', {
@@ -99,13 +127,30 @@ server.post("/auth/logout", function(req, res, next) {
     res.end(JSON.stringify({message: "logout complete"}));
 });
 
+server.get("/auth/login", function(req, res, next) {
+    var token = auth.isLoggedIn(req);
+    if (token) {
+        res.writeHead(200, JSON_CONTENT);
+        token['authenticated'] = true;
+        token['message'] = 'Authenticated';
+        res.end(JSON.stringify(token));
+    } else {
+        res.writeHead(200, JSON_CONTENT);
+        res.end(JSON.stringify({authenticated: false, message: "Not Authenticated"}));
+    }
+});
+
 /* LOGIN ENDPOINT */
 
 // add a rest point for all items in the schema map
 for (var key in schemas) {
     rmep.createEndPoint(server, 'CRUD'
-                   ,{name: key + 's', basePath: '/rest/v1', schema: schemas[key]});
+                   ,{name: key + 's', basePath: '/rest', schema: schemas[key]});
 }
+
+rmep.createSearchEndPoint(server, {basePath: '/rest'});
+
+auth.createEndPoints(server, '/auth', loginCollection);
 
 
 server.listen(3000, function() {
