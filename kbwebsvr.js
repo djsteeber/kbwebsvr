@@ -93,10 +93,10 @@ server.post("/auth/login", function(req, res, next) {
 
             res.setCookie('token', results.token, {
                 path: '/',
-                maxAge: 3600,
+                maxAge: 86400, //one day 60*60*24
                // domain: 'localhost',
                 secure: false,
-                httpOnly: false
+                httpOnly: true
             });
 
             res.writeHead(200, JSON_CONTENT);
@@ -151,9 +151,6 @@ for (var key in schemas) {
 rmep.createSearchEndPoint(server, {basePath: '/rest'});
 
 auth.createEndPoints(server, '/auth', loginCollection);
-
-// right here need to create a document resource, instead of going through the main one
-
 
 
 server.listen(3000, function() {

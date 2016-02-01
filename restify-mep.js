@@ -32,11 +32,55 @@ function getRequestData(req) {
    var x = typeof req.body;
 
    try {
-      if (req && req.body && (typeof req.body != 'object')) {
-         obj = JSON.parse(req.body);
-      } else {
-         obj = req.body;
+
+      if (req.body) {
+         if (typeof req.body == 'object') {
+            obj = req.body;
+         } else {
+            try {
+               obj = JSON.parse(req.body);
+            } catch (err) {
+               console.log(err);
+               obj = {};
+            }
+         }
       }
+
+      // fetch the paramters here, if sent on the parm line
+      // this happens with ajax get requests
+
+      // loop through the variables to ensure that the values are json objects as well
+      //
+      for (var objKey in obj) {
+         try {
+            obj[objKey] = JSON.parse(obj[objKey]);
+         } catch (fieldParseIgnore){
+            /* ignore */
+         }
+      }
+
+      if (req.params && req.params.q) {
+         try {
+            var value = JSON.parse(req.params.q);
+            for (var objKey in value) {
+               obj[objKey] = value[objKey];
+            }
+         } catch (paramsConversionExc) {
+            /* ignore */
+         }
+/* this is when I figure out how to send multiple parameters via ajax.
+   for now just sending in on struct under q so that i can test sort and limit options
+
+         for (var objKey in req.params) {
+            try {
+               obj[objKey] = JSON.parse(req.params[objKey]);
+            } catch (fieldParseIgnore) {
+               // ignore
+            }
+         }
+   */
+      }
+
       if (req.files) {
          for (var fkey in req.files) {
             var jsonFile = createJSONFile(req.files[fkey]);
@@ -71,14 +115,14 @@ function addLocationTo(items, req) {
       data[n] = addLocationToItem(items[n], req);
    }
    return data;
-};
+}
 
 function addLocationToItem(item, req) {
    basePath = protocol + '://' + req.headers.host + req._url.pathname;
 
    item.uri = basePath + '/' + item._id;
    return item;
-};
+}
 
 /**
  * merge source into the target object
@@ -88,7 +132,7 @@ var mergeInto = function(target, source) {
      target[k] = source[k];
    }
    return target;
-}
+};
 /* HELPER FUNCTIONS */
 
 /* RESTIFY handlers */
@@ -99,14 +143,33 @@ var mergeInto = function(target, source) {
 var getItems = function (req, res, next) {
 console.log("gettting items\n");
    var collection = getCollection(req);
-   var query = getRequestData(req);
+   var reqData = getRequestData(req);
+   var query = (reqData.q) ? reqData.q : {};
+   var sort =  (reqData.sort) ? reqData.sort : null;
+   var limit =  (reqData.limit) ? reqData.limit : null;
+   var options = {};
+
+   if (sort) {
+      options.sort = sort;
+   }
+   if (limit) {
+      options.limit = limit;
+   }
+
+
+   //var query = getRequestData(req);
    // right now just use all of the request body as the query object
    // might want to add in field selection, but that is an add on as the front end can ignore
-   //console.log(req);   
-   collection.find(query, function(err, items) {
+   //console.log(req);
+   console.log("in find with query " + JSON.stringify(query));
+
+   collection.find(query, null, options, function(err, items) {
       //TODO:  add in error handling
 
-//console.log(req);
+      if (err) {
+         console.log(err);
+      }
+//console.log();
       //add in location
       var data = addLocationTo(items, req);
 
@@ -264,8 +327,6 @@ console.log('adding new item');
    var item = getRequestData(req);
    console.log('adding to collection');
 
-
-
    //need to put in the chain of callbacks
    // here we want to move the file, and the call
    item = convertAndStoreFiles(item, collectionName);
@@ -283,6 +344,24 @@ console.log('adding new item');
       return next();
    });
 }
+
+/**
+ * This will return a function that converts all dates, files and eventually passwords into the right format
+ * It is done after the validate.  So not to impose these formats onto how the user enters the data.
+ * @param schema
+ * @returns {Function}
+ */
+var convertBody = function(schema) {
+   return function(req, res, next) {
+      console.log("conversion of password, date and file types");
+      var obj = getRequestData();
+
+      req.data = jsc.convert(req.data, schema);
+
+      return next();
+   };
+};
+
 
 /**
  * will validate to body of the request with the schema
@@ -303,8 +382,9 @@ var validateBody = function (schema) {
      console.log('validating body complete');
 
     return next();
-  }
-}
+  };
+};
+
 /**
  * rest endpoint to return the schema
  */

@@ -20,6 +20,7 @@ for (var schemaName in schemas) {
         fni[fieldName] = 1;
 console.log(JSON.stringify(fni));
         collection.ensureIndex(fni,{unique:true});
+
      }
   }
 }

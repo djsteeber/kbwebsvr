@@ -3,6 +3,7 @@ var mongojs = require('mongojs');
 var phash = require('password-hash-and-salt');
 
 
+
 var password = "blah";
 phash(password).hash(function(error, hash) {
     if (error) {

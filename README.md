@@ -13,4 +13,8 @@ Errors are also sent as json.  Standard structure is
 
 ##TODO
 need to add in logging
+should add some simple queries so that mongo queries are not sent directly.  Some sort of conversion algorithm
+This will take some time
+example
+schedule.date > now() order by schedule.date limit 5
 

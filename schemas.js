@@ -14,8 +14,8 @@ var phoneType = {
 
 var schedule = {
      date: {isRequired:true, isDate:true}
-    ,start: {isRequired:true, isTime:true}
-    ,end: {isRequired:true, isTime:true}
+    ,start: {isRequired:false, isTime:true}
+    ,end: {isRequired:false, isTime:true}
 };
 
 var scheduleTime = {
@@ -44,11 +44,11 @@ var location = {
 var shoot = {
      name: reqString
     ,description: reqString
-    ,dateText: reqString
-    ,timeText: reqString
-    ,shortDescription: reqString
+//    ,dateText: reqString
+//    ,timeText: reqString
+//    ,shortDescription: reqString
     ,shootType: reqString
-    ,schedule: {isArrayOf: [schedule, 0]} //change to 1 once the ready to move to date times
+    ,schedule: {isArrayOf: [schedule, 1]} //change to 1 once the ready to move to date times
     ,flyer: {isRequired: false, isFile: true} // change to points to document
     ,results: {isString:true}  // change to points to document
 };
@@ -113,8 +113,8 @@ var document = {
 var announcement = {
     title: reqString
     ,text: reqString
-    ,startDate: reqDate
-    ,endDate: reqDate
+    ,start: reqDate
+    ,end: reqDate
 };
 
 

@@ -38,7 +38,8 @@ module.exports = function JSONSchemaValidator() {
          }
          result = f.apply(null, parms);
          if (! result) {
-            addFieldError(fieldName, fieldName + ' failed ' + fn + ' check');
+            addFieldError(fieldName, fieldName + ' failed ' + fn + ' check on value' + value);
+            addFieldError(fieldName, fieldName + ' failed ' + fn + ' check on value' + value);
          }
       }
       return result; 
@@ -54,7 +55,38 @@ module.exports = function JSONSchemaValidator() {
    }
 
    function isDate(value, bool) {
-      return (value == null) || validator.isDate(value);
+      if (value == null) {
+         return true;
+      }
+
+      //validator isDate does not work, because a fill date is not passed in.
+      // we dont care about this.  we are just going to store year, month date
+      try {
+         var dtParts = value.split('-');
+         if (dtParts.length != 3) {
+            return false;
+         }
+
+         dtParts = dtParts.map(function (part) {
+            return parseInt(part);
+         });
+
+         var dt = new Date(dtParts[0], dtParts[1] - 1, dtParts[2]);
+         if (dt.getFullYear() != dtParts[0]) {
+            return false;
+         }
+         if (dt.getMonth() != (dtParts[1]-1)) {
+            return false;
+         }
+         if (dt.getDate() != (dtParts[2])) {
+            return false;
+         }
+      } catch (dtParseErr) {
+         return false;
+      }
+
+
+      return true;
    }
    function isRequired(value, bool) {
        return (! bool) || ((! validator.isNull(value)) && (validator.isLength(value, 1)));
