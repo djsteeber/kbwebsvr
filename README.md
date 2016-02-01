@@ -17,4 +17,5 @@ should add some simple queries so that mongo queries are not sent directly.  Som
 This will take some time
 example
 schedule.date > now() order by schedule.date limit 5
+might want named filters
 
