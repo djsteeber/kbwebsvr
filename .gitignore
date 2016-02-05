@@ -30,4 +30,4 @@ node_modules
 .idea
 
 # ignore the configuration
-kbwebsvr.env
+kbwebsvr-env.js
