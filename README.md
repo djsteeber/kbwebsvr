@@ -1,5 +1,5 @@
 # KBWEBSERVER
-This is a nodejs based rest resource server for the kenosha bowmen archery web site.
+This is a nodejs based rest resource server for the kenosha bowmen archery web site.  added in change
 
 The rest endpoints do not care about versioning, since the main client is a single page application.
 If more integration is ever needed, then it will be added.
