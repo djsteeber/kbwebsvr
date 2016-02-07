@@ -36,7 +36,8 @@ var shoots = [
             { date: "2016-02-25",  start: "1500",  end: "2100" },
             { date: "2016-03-03",  start: "1500",  end: "2100" },
             { date: "2016-03-10",  start: "1500",  end: "2100" }
-        ]
+        ],
+        flyer: { url: "/misc_docs/shoots/2016YouthLeague.jpg", name: "2016YouthLeague.jpg" }
     },
     { name: "3D Indoor Shoot",
         description: "3D target shoot.  24 animal targets on the indoor range.  Test your skill",
@@ -70,28 +71,32 @@ var shoots = [
         shootType: "Shoot",
         schedule: [
             { date: "2015-12-26", start: "1800", end: "2100" }
-        ]
+        ],
+        flyer: { url: "/misc_docs/shoots/2016CricketNight.png", name: "2016CricketNight.png" }
     },
     { name: "Cricket Shoot",
         description: "Indoor Cricket Targets, teams of 2.  This is based on the dart game of cricket. 2 player teams selected at random, shoot at a paper target of a dart board.",
         shootType: "Shoot",
         schedule: [
             { date: "2016-01-23", start: "1800", end: "2100" }
-        ]
+        ],
+        flyer: { url: "/misc_docs/shoots/2016CricketNight.png", name: "2016CricketNight.png" }
     },
     { name: "Cricket Shoot",
         description: "Indoor Cricket Targets, teams of 2.  This is based on the dart game of cricket. 2 player teams selected at random, shoot at a paper target of a dart board.",
         shootType: "Shoot",
         schedule: [
             { date: "2016-02-20", start: "1800", end: "2100" }
-        ]
+        ],
+        flyer: { url: "/misc_docs/shoots/2016CricketNight.png", name: "2016CricketNight.png" }
     },
     { name: "Cricket Shoot",
         description: "Indoor Cricket Targets, teams of 2.  This is based on the dart game of cricket. 2 player teams selected at random, shoot at a paper target of a dart board.",
         shootType: "Shoot",
         schedule: [
             { date: "2016-03-26", start: "1800", end: "2100" }
-        ]
+        ],
+        flyer: { url: "/misc_docs/shoots/2016CricketNight.png", name: "2016CricketNight.png" }
     },
     { name: "Indoor Spot League",
         description: "Tuesday Indoor League.",
@@ -107,7 +112,8 @@ var shoots = [
             { date: "2016-02-23",  start: "1800",  end: "2100" },
             { date: "2016-03-01",  start: "1800",  end: "2100" },
             { date: "2016-03-08",  start: "1800",  end: "2100" }
-        ]
+        ],
+        flyer: { url: "/misc_docs/shoots/2016SpotLeagueFlyer.png", name: "2016SpotLeagueFlyer.png" }
     },
     { name: "KM Shoot",
         description: "Kettle Moraine Indoor Shoot at Kenosha Bowmen.  This is traveling shoot based at various clubs.",
@@ -191,9 +197,54 @@ var shoots = [
             { date: "2016-09-14",  start: "1500",  end: "2100" }
         ]
     },
-
-
-
+    { name: "Friday Night Open Shoot",
+        description: "Open to the public.  Indoor shooting, open range.",
+        shootType: "Open",
+        schedule: [
+            { date: "2016-02-05", start: "1800", end: "2200" }
+        ],
+        flyer: { url: "/misc_docs/shoots/2016FridayNightOpenShooting.png", name: "2016FridayNightOpenShooting.png" }
+    },
+    { name: "Friday Night Open Shoot",
+        description: "Open to the public.  Indoor shooting, open range.",
+        shootType: "Open",
+        schedule: [
+            { date: "2016-02-12", start: "1800", end: "2200" }
+        ],
+        flyer: { url: "/misc_docs/shoots/2016FridayNightOpenShooting.png", name: "2016FridayNightOpenShooting.png" }
+    },
+    { name: "Friday Night Open Shoot",
+        description: "Open to the public.  Indoor shooting, open range.",
+        shootType: "Open",
+        schedule: [
+            { date: "2016-02-19", start: "1800", end: "2200" }
+        ],
+        flyer: { url: "/misc_docs/shoots/2016FridayNightOpenShooting.png", name: "2016FridayNightOpenShooting.png" }
+    },
+    { name: "Friday Night Open Shoot",
+        description: "Open to the public.  Indoor shooting, open range.",
+        shootType: "Open",
+        schedule: [
+            { date: "2016-03-04", start: "1800", end: "2200" }
+        ],
+        flyer: { url: "/misc_docs/shoots/2016FridayNightOpenShooting.png", name: "2016FridayNightOpenShooting.png" }
+    },
+    { name: "Friday Night Open Shoot",
+        description: "Open to the public.  Indoor shooting, open range.",
+        shootType: "Open",
+        schedule: [
+            { date: "2016-03-18", start: "1800", end: "2200" }
+        ],
+        flyer: { url: "/misc_docs/shoots/2016FridayNightOpenShooting.png", name: "2016FridayNightOpenShooting.png" }
+    },
+    { name: "Friday Night Open Shoot",
+        description: "Open to the public.  Indoor shooting, open range.",
+        shootType: "Open",
+        schedule: [
+            { date: "2016-03-25", start: "1800", end: "2200" }
+        ],
+        flyer: { url: "/misc_docs/shoots/2016FridayNightOpenShooting.png", name: "2016FridayNightOpenShooting.png" }
+    }
 
 ];
 

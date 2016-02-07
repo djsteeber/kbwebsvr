@@ -29,8 +29,26 @@ curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
-I am running mongoDB 2.4.9 as of the writing of this document
+I am running mongoDB 3.2.1 as of the writing of this document
 
+##Configuration
+You need to create a file called kbwebsvr-env.js
+This will have the settings for the session secret key to generate the data, session time outs, where the secure
+documents are stored, the mongodb connection
+The file is not stored in git so that the secret is kept secret.
+
+```
+module.exports = {
+
+    //TODO, generate this randomly
+    session_secret: 'somesecret key',
+    session_timeout: 5 + 60 * 60 * 1000, //5 hours, needs to be longer on deploys,
+    secure_document_root: '/',
+    mongodb_uri: 'mongodb://localhost/archeryweb',
+    secure_doc_root: '/kbwebsvr/data'
+
+};
+```
 
 ##TODO
 - need to add in logging
