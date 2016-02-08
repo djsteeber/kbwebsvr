@@ -113,7 +113,6 @@ function Auth(config) {
     self.initialize = function() {
         passport.serializeUser(function(user, done) {
             var id = (user['id']) ? user.id : user._id.toString();
-            console.log('serialize called on ' + JSON.stringify(user));
             done(null, id);
         });
 

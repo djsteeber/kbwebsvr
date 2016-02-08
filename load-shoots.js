@@ -8,6 +8,7 @@ var shoots = [
     { name: "Fran's Indoor Animal League",
         description: "10 week Indoor League.",
         shootType: "League",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-01-06",  start: "1500",  end: "2100" },
             { date: "2016-01-13",  start: "1500",  end: "2100" },
@@ -25,6 +26,7 @@ var shoots = [
     { name: "Indoor Youth League",
         description: "Thursday Indoor League.",
         shootType: "League",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-01-07",  start: "1500",  end: "2100" },
             { date: "2016-01-14",  start: "1500",  end: "2100" },
@@ -42,6 +44,7 @@ var shoots = [
     { name: "3D Indoor Shoot",
         description: "3D target shoot.  24 animal targets on the indoor range.  Test your skill",
         shootType: "Shoot",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-01-16", start: "0800", end: "1600" },
             { date: "2016-01-17", start: "0800", end: "1500" }
@@ -51,6 +54,7 @@ var shoots = [
     { name: "3D Indoor Shoot",
         description: "3D target shoot.  24 animal targets on the indoor range.  Test your skill",
         shootType: "Shoot",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-02-27", start: "0800", end: "1600" },
             { date: "2016-02-28", start: "0800", end: "1500" }
@@ -60,6 +64,7 @@ var shoots = [
     { name: "3D Indoor Shoot",
         description: "3D target shoot.  24 animal targets on the indoor range.  Test your skill",
         shootType: "Shoot",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-03-12", start: "0800", end: "1600" },
             { date: "2016-03-13", start: "0800", end: "1500" }
@@ -69,6 +74,7 @@ var shoots = [
     { name: "Cricket Shoot",
         description: "Indoor Cricket Targets, teams of 2.  This is based on the dart game of cricket. 2 player teams selected at random, shoot at a paper target of a dart board.",
         shootType: "Shoot",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2015-12-26", start: "1800", end: "2100" }
         ],
@@ -77,6 +83,7 @@ var shoots = [
     { name: "Cricket Shoot",
         description: "Indoor Cricket Targets, teams of 2.  This is based on the dart game of cricket. 2 player teams selected at random, shoot at a paper target of a dart board.",
         shootType: "Shoot",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-01-23", start: "1800", end: "2100" }
         ],
@@ -85,6 +92,7 @@ var shoots = [
     { name: "Cricket Shoot",
         description: "Indoor Cricket Targets, teams of 2.  This is based on the dart game of cricket. 2 player teams selected at random, shoot at a paper target of a dart board.",
         shootType: "Shoot",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-02-20", start: "1800", end: "2100" }
         ],
@@ -93,6 +101,7 @@ var shoots = [
     { name: "Cricket Shoot",
         description: "Indoor Cricket Targets, teams of 2.  This is based on the dart game of cricket. 2 player teams selected at random, shoot at a paper target of a dart board.",
         shootType: "Shoot",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-03-26", start: "1800", end: "2100" }
         ],
@@ -101,6 +110,7 @@ var shoots = [
     { name: "Indoor Spot League",
         description: "Tuesday Indoor League.",
         shootType: "League",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-01-05",  start: "1800",  end: "2100" },
             { date: "2016-01-12",  start: "1800",  end: "2100" },
@@ -118,6 +128,7 @@ var shoots = [
     { name: "KM Shoot",
         description: "Kettle Moraine Indoor Shoot at Kenosha Bowmen.  This is traveling shoot based at various clubs.",
         shootType: "KM Shoot",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-02-20", start: "0900", end: "1500" },
             { date: "2016-02-21", start: "0900", end: "1500" }
@@ -126,6 +137,7 @@ var shoots = [
     { name: "Dragon Shoot",
         description: "Indoor target shoot. Dragon targets",
         shootType: "Shoot",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-03-19", start: "0830", end: "1700" },
             { date: "2016-03-20", start: "0900", end: "1500" }
@@ -135,6 +147,7 @@ var shoots = [
     { name: "Turkey Shoot",
         description: "3D Outdoor Shoot. Take your best shot at 28 3D TURKEY targets.",
         shootType: "Shoot",
+        range: ["Range 1", "Range 2", "Range 3"],
         schedule: [
             { date: "2016-03-26", start: "0800", end: "1500" },
             { date: "2016-03-27", start: "0800", end: "1500" }
@@ -145,6 +158,7 @@ var shoots = [
     { name: "KB Spring Outdoor League",
         description: "10 week Outdoor League.  14 targets ranging from 5 to 50+ yards.  Multiple divisions, Traditional, Bowhunter.  A different range each week.",
         shootType: "League",
+        range: ["Range 1", "Range 2", "Range 3", "Range 4"],
         schedule: [
             { date: "2016-04-11",  start: "1500",  end: "2100" },
             { date: "2016-04-18",  start: "1500",  end: "2100" },
@@ -161,6 +175,7 @@ var shoots = [
     { name: "Johnny G. Traditional Shoot",
         description: "3D Outdoor Traditional Shoot.",
         shootType: "Shoot",
+        range: ["Range 1", "Range 2", "Range 3"],
         schedule: [
             { date: "2016-05-21", start: "0800", end: "1500" },
             { date: "2016-05-22", start: "0800", end: "1500" }
@@ -170,6 +185,7 @@ var shoots = [
     { name: "Memorial Day Shoot",
         description: "3D Outdoor Shoot.",
         shootType: "Shoot",
+        range: ["Range 1", "Range 2", "Range 3"],
         schedule: [
             { date: "2016-05-28", start: "0800", end: "1500" },
             { date: "2016-05-29", start: "0800", end: "1500" },
@@ -179,6 +195,7 @@ var shoots = [
     { name: "Kenosha LBL Shoot",
         description: "Outdoor Shoot.",
         shootType: "LBL",
+        range: ["Range 1", "Range 2", "Range 3"],
         schedule: [
             { date: "2016-06-11", start: "0800", end: "1500" },
             { date: "2016-06-12", start: "0800", end: "1500" }
@@ -186,7 +203,8 @@ var shoots = [
     },
     { name: "KB Tower League",
         description: "Member's only league, shooting 3D from a platform. 7 weeks.  Changing targets and distances. Multi-level platform.",
-        shootType: "League",
+        shootType: "Members Only League",
+        range: ["Tower"],
         schedule: [
             { date: "2016-08-03",  start: "1500",  end: "2100" },
             { date: "2016-08-10",  start: "1500",  end: "2100" },
@@ -200,6 +218,7 @@ var shoots = [
     { name: "Friday Night Open Shoot",
         description: "Open to the public.  Indoor shooting, open range.",
         shootType: "Open",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-02-05", start: "1800", end: "2200" }
         ],
@@ -208,6 +227,7 @@ var shoots = [
     { name: "Friday Night Open Shoot",
         description: "Open to the public.  Indoor shooting, open range.",
         shootType: "Open",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-02-12", start: "1800", end: "2200" }
         ],
@@ -216,6 +236,7 @@ var shoots = [
     { name: "Friday Night Open Shoot",
         description: "Open to the public.  Indoor shooting, open range.",
         shootType: "Open",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-02-19", start: "1800", end: "2200" }
         ],
@@ -224,6 +245,7 @@ var shoots = [
     { name: "Friday Night Open Shoot",
         description: "Open to the public.  Indoor shooting, open range.",
         shootType: "Open",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-03-04", start: "1800", end: "2200" }
         ],
@@ -232,6 +254,7 @@ var shoots = [
     { name: "Friday Night Open Shoot",
         description: "Open to the public.  Indoor shooting, open range.",
         shootType: "Open",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-03-18", start: "1800", end: "2200" }
         ],
@@ -240,6 +263,7 @@ var shoots = [
     { name: "Friday Night Open Shoot",
         description: "Open to the public.  Indoor shooting, open range.",
         shootType: "Open",
+        range: ["Indoor Range"],
         schedule: [
             { date: "2016-03-25", start: "1800", end: "2200" }
         ],
@@ -250,28 +274,20 @@ var shoots = [
 
 
 
-var password = "blah";
-phash(password).hash(function(error, hash) {
-    if (error) {
-        throw new Error('Something went wrong!');
-        console.log("ahh");
-    }
+//create the collections based on the schemas
+var db = mongojs('mongodb://localhost/archeryweb', []);
 
-    //create the collections based on the schemas
-    var db = mongojs('mongodb://localhost/archeryweb', []);
+var collection = db.collection('shoots');
 
-    var collection = db.collection('shoots');
-
-    collection.remove();
-    for (var shoot in shoots) {
-        console.log(JSON.stringify(shoots[shoot]));
-        collection.insert(shoots[shoot]);
-    }
+collection.remove();
+for (var shoot in shoots) {
+    console.log(JSON.stringify(shoots[shoot]));
+    collection.insert(shoots[shoot]);
+}
 
 
-    console.log('done');
-    db.close();
-});
+console.log('done');
+db.close();
 
 
 
