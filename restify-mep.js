@@ -459,6 +459,20 @@ exports.createEndPoint = function(server, epTypes, config) {
    server.get(epName + '.schema', displaySchema(config.schema));
 };
 
+exports.catchAllErrors = function(req, res, next) {
+   var rtn;
+
+   try {
+      rtn = next();
+   } catch (exc) {
+      console.log(exc);
+
+      res.writeHead(401, JSON_CONTENT);
+      res.end(JSON.stringify(exc));
+   }
+   return rtn;
+};
+
 //TODO: This needs a lot of work.
 exports.createSearchEndPoint = function(server, epconfig) {
    var entities = ['users'];
