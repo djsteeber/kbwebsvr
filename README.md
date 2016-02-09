@@ -59,3 +59,6 @@ any schedule.date > now() order by schedule.date limit 5
 
 This will take some time.
 
+###Schedule migration
+moving away from date yyyy-mm-dd format and moving to Date('2016-01-01T12:13:00.000Z') format
+need to convert schedule

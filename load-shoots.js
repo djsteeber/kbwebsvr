@@ -3,6 +3,7 @@ var mongojs = require('mongojs');
 var phash = require('password-hash-and-salt');
 
 
+var now = Date.now();
 
 var shoots = [
     { name: "Fran's Indoor Animal League",
@@ -21,7 +22,13 @@ var shoots = [
             { date: "2016-03-02",  start: "1500",  end: "2100" },
             { date: "2016-03-09",  start: "1500",  end: "2100" },
             { date: "2016-03-26",  start: "1500",  end: "2100" }
-        ]
+        ],
+        // last date is needed on the final so that
+        xschedule: [{start: new Date("January 6, 2016 15:00"), end: new Date("January 6, 2016 21:00"), repeat: "WEEKLY", repeatCount: 10}],
+        scheduleStartDate: new Date("January 6, 2016 15:00"),
+        scheduleEndDate: new Date("March 26, 2016 21:00"),
+        created: now,
+        modified: now
     },
     { name: "Indoor Youth League",
         description: "Thursday Indoor League.",
@@ -39,7 +46,13 @@ var shoots = [
             { date: "2016-03-03",  start: "1500",  end: "2100" },
             { date: "2016-03-10",  start: "1500",  end: "2100" }
         ],
-        flyer: { url: "/misc_docs/shoots/2016YouthLeague.jpg", name: "2016YouthLeague.jpg" }
+        flyer: { url: "/misc_docs/shoots/2016YouthLeague.jpg", name: "2016YouthLeague.jpg" },
+        xschedule: [{start: new Date("January 7, 2016 15:00"), end: new Date("January 7, 2016 21:00"), repeat: "WEEKLY", repeatCount: 9}],
+        // used for weeding out the current vs past events.  TODO figure out how to make this a trigger on update / insert, most likely in code, yuck
+        scheduleStartDate: new Date("January 7, 2016 15:00"),
+        scheduleEndDate: new Date("March 10, 2016 21:00"),
+        created: now,
+        modified: now
     },
     { name: "3D Indoor Shoot",
         description: "3D target shoot.  24 animal targets on the indoor range.  Test your skill",
@@ -49,8 +62,15 @@ var shoots = [
             { date: "2016-01-16", start: "0800", end: "1600" },
             { date: "2016-01-17", start: "0800", end: "1500" }
         ],
-        flyer: { url: "/misc_docs/shoots/20163Dflyer.png", name: "20163Dflyer.png" }
-    },
+        flyer: { url: "/misc_docs/shoots/20163Dflyer.png", name: "20163Dflyer.png" },
+        xschedule: [{start: "January 16, 2016 08:00", end: "January 16, 2016 16:00", finalDate: "January 16, 2016 15:00"},
+            {start: new Date("January 16, 2016 08:00"), end: new Date("January 16, 2016 15:00")}],
+        scheduleStartDate: new Date("January 16, 2016 08:00"),
+        scheduleEndDate: new Date("January 16, 2016 15:00"),
+        created: now,
+        modified: now
+    }
+    /* ,
     { name: "3D Indoor Shoot",
         description: "3D target shoot.  24 animal targets on the indoor range.  Test your skill",
         shootType: "Shoot",
@@ -269,7 +289,7 @@ var shoots = [
         ],
         flyer: { url: "/misc_docs/shoots/2016FridayNightOpenShooting.png", name: "2016FridayNightOpenShooting.png" }
     }
-
+*/
 ];
 
 

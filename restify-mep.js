@@ -211,6 +211,7 @@ var updateItem = function (req, res, next) {
    var oid = mongojs.ObjectId(req.params.id);
    var collection = getCollection(req);
 
+   obj.modified = Date.now();
    collection.update({_id: oid}, obj, {multi: false}, function (err, data) {
       if (err) {
          res.writeHead(400, JSON_CONTENT);
@@ -331,6 +332,10 @@ console.log('adding new item');
    // here we want to move the file, and the call
    item = convertAndStoreFiles(item, collectionName);
 
+   // append the created date to the item
+   var now = Date.now();
+   item.created = now;
+   item.updated = now;
    collection.save(item, function (err, data) {
       console.log("done with save of item");
       if (err) {
