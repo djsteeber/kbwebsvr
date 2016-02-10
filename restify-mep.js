@@ -39,6 +39,13 @@ function getRequestData(req) {
          } else {
             try {
                obj = JSON.parse(req.body);
+               for (var objKey in obj) {
+                  try {
+                     obj[objKey] = JSON.parse(obj[objKey]);
+                  } catch (fieldParseIgnore){
+                     /* ignore */
+                  }
+               }
             } catch (err) {
                console.log(err);
                obj = {};
@@ -46,39 +53,15 @@ function getRequestData(req) {
          }
       }
 
-      // fetch the paramters here, if sent on the parm line
-      // this happens with ajax get requests
-
-      // loop through the variables to ensure that the values are json objects as well
-      //
-      for (var objKey in obj) {
+      if (req.params) {
          try {
-            obj[objKey] = JSON.parse(obj[objKey]);
-         } catch (fieldParseIgnore){
-            /* ignore */
-         }
-      }
-
-      if (req.params && req.params.q) {
-         try {
-            var value = JSON.parse(req.params.q);
+            var value = req.params;
             for (var objKey in value) {
                obj[objKey] = value[objKey];
             }
          } catch (paramsConversionExc) {
             /* ignore */
          }
-/* this is when I figure out how to send multiple parameters via ajax.
-   for now just sending in on struct under q so that i can test sort and limit options
-
-         for (var objKey in req.params) {
-            try {
-               obj[objKey] = JSON.parse(req.params[objKey]);
-            } catch (fieldParseIgnore) {
-               // ignore
-            }
-         }
-   */
       }
 
       if (req.files) {
@@ -137,35 +120,59 @@ var mergeInto = function(target, source) {
 
 /* RESTIFY handlers */
 
+var convertDates = function(obj) {
+   var rtn = {};
+   for (var key in obj) {
+      var val = obj[key];
+      if (typeof val == 'object') {
+         rtn[key] = convertDates(val);
+      } else if (typeof val == 'string') {
+         try {
+            var dt = new Date(val);
+            rtn[key] = dt;
+         } catch(err) {
+            rtn[key] = val;
+         }
+      } else {
+         rtn[key] =  val;
+      }
+   }
+   return rtn;
+};
 /**
  * handler for get on the collection
  */
 var getItems = function (req, res, next) {
 console.log("gettting items\n");
    var collection = getCollection(req);
+   var collectionName = getCollectionName(req);
    var reqData = getRequestData(req);
    var query = (reqData.q) ? reqData.q : {};
    var sort =  (reqData.sort) ? reqData.sort : null;
    var limit =  (reqData.limit) ? reqData.limit : null;
    var options = {};
 
+   limit = (limit && (typeof limit == 'string')) ? parseInt(limit) : limit;
    if (sort) {
-      options.sort = sort;
+      options.sort = {};
+      for (var sortKey in sort) {
+         options.sort[sortKey] = (typeof sort[sortKey] == "string") ? parseInt(sort[sortKey]) : sort[sortKey];
+      }
    }
    if (limit) {
       options.limit = limit;
    }
 
-
    //var query = getRequestData(req);
    // right now just use all of the request body as the query object
    // might want to add in field selection, but that is an add on as the front end can ignore
    //console.log(req);
-   console.log("in find with query " + JSON.stringify(query));
-
-   collection.find(query, null, options, function(err, items) {
-      //TODO:  add in error handling
-
+   console.log("find in collection " + collectionName)
+   console.log("   query " + JSON.stringify(query));
+   console.log("   options " + JSON.stringify(options));
+try {
+//   collection.find(query, null, options, function (err, items) {
+   collection.find(query, null, options, function (err, items) {
       if (err) {
          console.log(err);
       }
@@ -178,6 +185,9 @@ console.log("gettting items\n");
       console.log("items sent: gettting items\n");
       return next();
    });
+} catch (findexc) {
+   console.log(findexc);
+}
 };
 
 
@@ -211,6 +221,7 @@ var updateItem = function (req, res, next) {
    var oid = mongojs.ObjectId(req.params.id);
    var collection = getCollection(req);
 
+   obj.modified = Date.now();
    collection.update({_id: oid}, obj, {multi: false}, function (err, data) {
       if (err) {
          res.writeHead(400, JSON_CONTENT);
@@ -331,6 +342,10 @@ console.log('adding new item');
    // here we want to move the file, and the call
    item = convertAndStoreFiles(item, collectionName);
 
+   // append the created date to the item
+   var now = Date.now();
+   item.created = now;
+   item.updated = now;
    collection.save(item, function (err, data) {
       console.log("done with save of item");
       if (err) {
@@ -458,6 +473,62 @@ exports.createEndPoint = function(server, epTypes, config) {
    console.log('adding read endpoint ' + epName + '.schema');
    server.get(epName + '.schema', displaySchema(config.schema));
 };
+
+exports.catchAllErrors = function(req, res, next) {
+   var rtn;
+
+   try {
+      rtn = next();
+   } catch (exc) {
+      console.log(exc);
+
+      res.writeHead(401, JSON_CONTENT);
+      res.end(JSON.stringify(exc));
+   }
+   return rtn;
+};
+
+exports.parseDates = function(req, resp, next) {
+   // parse out the options in body and request params and check for any dates
+   // if they exist, change them into date objects
+
+   var remapDates = function(obj) {
+      if (! obj || obj == {}) return obj;
+
+      try {
+         for (var key in obj) {
+            var val = obj[key];
+            console.log(typeof val);
+            if (typeof val == 'object') {
+               obj[key] = remapDates(val);
+            } else {
+               if (val == 'now()') {
+                  obj[key] = new Date();
+                  console.log(' converting key ' + val + ' to now date');
+               } else if (val.startsWith('Date(')) {
+                  try {
+                     var parts = val.split("'");
+                     obj[key] = new Date(parts[1]);
+                  } catch (dtErr) {
+                     obj[key] = val;
+                  }
+
+               }
+            }
+         }
+      } catch (err) {
+         console.log(err);
+      }
+
+      return obj;
+   };
+
+   req.body = remapDates(req.body);
+   req.params = remapDates(req.params);
+
+   next();
+};
+
 
 //TODO: This needs a lot of work.
 exports.createSearchEndPoint = function(server, epconfig) {

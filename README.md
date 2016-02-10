@@ -1,5 +1,5 @@
 # KBWEBSERVER
-This is a nodejs based rest resource server for the kenosha bowmen archery web site.
+This is a nodejs based rest resource server for the kenosha bowmen archery web site.  added in change
 
 The rest endpoints do not care about versioning, since the main client is a single page application.
 If more integration is ever needed, then it will be added.
@@ -59,3 +59,6 @@ any schedule.date > now() order by schedule.date limit 5
 
 This will take some time.
 
+###Schedule migration
+moving away from date yyyy-mm-dd format and moving to Date('2016-01-01T12:13:00.000Z') format
+need to convert schedule

@@ -48,6 +48,7 @@ var shoot = {
 //    ,timeText: reqString
 //    ,shortDescription: reqString
     ,shootType: reqString
+    ,range: {isArrayOf: [{isOneOf: [["Range 1", "Range 2", "Range 3", "Range 4", "Indoor Range", "Tower", "Practice Range", "Member's Range"]]}, 0]}
     ,schedule: {isArrayOf: [schedule, 1]} //change to 1 once the ready to move to date times
     ,flyer: {isRequired: false, isFile: true} // change to points to document
     ,results: {isString:true}  // change to points to document
