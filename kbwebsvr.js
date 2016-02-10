@@ -43,6 +43,7 @@ server.use(restify.queryParser());
 server.use(restify.bodyParser({mapParams: false}));
 server.use(restifyCookies.parse);
 server.use(auth.initialize());
+server.use(rmep.parseDates);
 //server.use(restify.CORS());
 
 
