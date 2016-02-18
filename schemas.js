@@ -13,14 +13,8 @@ var phoneType = {
 };
 
 var schedule = {
-     date: {isRequired:true, isDate:true}
-    ,start: {isRequired:false, isTime:true}
-    ,end: {isRequired:false, isTime:true}
-};
-
-var scheduleTime = {
-     start: {isRequired:true, isTime:true}
-    ,end: {isRequired:false, isTime:true}
+     start: {isRequired:false, isDate:true}
+    ,end: {isRequired:false, isDate:true}
 };
 
 var location = {
@@ -32,40 +26,23 @@ var location = {
     ,phone: {isArrayOf: phoneType}
 };
 
-/* do not mix events.  keep each one distinct
-   shoot, meeting, work party.
-   don't care if they have a lot in common, right now
-   maybe work on an inheritence type schema
- {name: 'Phantom Pig Shoot', date: 'January 23-24, 2016', times: 'Registration @ 8am, Shoot 8:30am - 3pm', info: 'Food, Bar, 3D Targets', link: '#',
- {name: 'Cricket Shoot', date: 'February 6, 2016', times: 'Registration @ 8am, Shoot 8:30am - 3pm', info: 'Food, Bar', link: '#'},
-
-
- */
-var shoot = {
-     name: reqString
-    ,description: reqString
-//    ,dateText: reqString
-//    ,timeText: reqString
-//    ,shortDescription: reqString
-    ,shootType: reqString
-    ,range: {isArrayOf: [{isOneOf: [["Range 1", "Range 2", "Range 3", "Range 4", "Indoor Range", "Tower", "Practice Range", "Member's Range"]]}, 0]}
-    ,schedule: {isArrayOf: [schedule, 1]} //change to 1 once the ready to move to date times
-    ,flyer: {isRequired: false, isFile: true} // change to points to document
-    ,results: {isString:true}  // change to points to document
-};
-
-/* making this simple, assume everything is at KB location, refactor if needed */
 var event = {
-     name: reqString
-    ,event_type: {isRequired:true, isString:true, isOneOf: [['SHOOT', 'MEETING', 'LEAGUE', 'WORKPARTY']]}
-    ,location: {pointsTo: 'locations'}
-    ,schedule: {isArrayOf: [schedule, 1]}
-    ,flyer: {isString:true} // change to points to document
-    ,results_doc: {isString:true}  // change to points to document
+    name: reqString
     ,description: reqString
-    ,status: {isRequired:true, isString:true, isOneOf: [['PENDING', 'APPROVED']]}
+    ,eventType: {isRequired:true, isString:true, isOneOf: [['SHOOT', 'MEETING', 'LEAGUE', 'WORKPARTY']]}
+    ,schedule: {isArrayOf: [schedule, 1]}
+    ,scheduleStartDate: reqDate
+    ,scheduleEndDate: reqDate
 };
 
+/* shoot extends from event */
+var shoot = Object.assign(event, {
+     flyer: {isRequired: false, isFile: true} // change to points to document
+    ,results: {isFile:true}  // change to points to document
+});
+
+var meeting = event;
+var workParty = event;
 
 
 var personsName = {
@@ -120,7 +97,7 @@ var announcement = {
 
 
 var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message, document: document
-    , shoot: shoot, announcement: announcement};
+    , shoot: shoot, announcement: announcement, workParty: workParty, meeting: meeting};
 module.exports = schemaMap;
 
 

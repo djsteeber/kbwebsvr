@@ -62,3 +62,8 @@ This will take some time.
 ###Schedule migration
 moving away from date yyyy-mm-dd format and moving to Date('2016-01-01T12:13:00.000Z') format
 need to convert schedule
+
+DNS Old
+kenoshabowmen.com	nameserver = ns1.accuwebhosting.biz.
+kenoshabowmen.com	nameserver = ns2.accuwebhosting.biz.
+
