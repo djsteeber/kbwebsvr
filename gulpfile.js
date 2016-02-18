@@ -37,6 +37,7 @@ gulp.task('copy-dist', [], function() {
         'json-schema-convertor.js',
         'json-schema-validator.js',
         'restify-mep.js',
+        'restify-ical.js',
         'package.json'
     ];
     return gulp.src(jsFiles)

@@ -22,6 +22,7 @@
     "body-parser": "^1.14.2",
     "client-sessions": "^0.7.0",
     "fs-extra": "^0.26.4",
+    "ical-generator": "^0.2.7",
     "jwt-simple": "^0.4.1",
     "kerberos": "0.0.18",
     "mocha": "^2.3.4",

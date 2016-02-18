@@ -22,6 +22,7 @@ var schemas = require('./schemas');
 var Auth = require('./auth');
 var SecureDoc = require('./secure-doc');
 var pluralize = require('pluralize');
+var RestifyICal = require('./restify-ical');
 
 
 var mongodb_inst = mongojs(kwsEnv.mongodb_uri, []);
@@ -67,6 +68,9 @@ for (var key in schemas) {
 
 var secureDoc = new SecureDoc(kwsEnv.secure_doc_root);
 secureDoc.createEndPoints(server);
+
+var restifyICal = new RestifyICal({db: mongodb_inst});
+restifyICal.createEndPoints(server);
 
 
 server.listen(3000, function() {
