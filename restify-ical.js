@@ -56,8 +56,8 @@ var RestifyICal = function(config) {
 
 
     self.createEndPoints = function(server) {
-        console.log('adding read endpoint /calendar/shoots');
-        server.get("/calendar/shoots", self.sendICal);
+        console.log('adding read endpoint /calendar/shoots.ics');
+        server.get("/calendar/shoots.ics", self.sendICal);
     };
 };
 
