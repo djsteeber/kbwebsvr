@@ -26,7 +26,7 @@ var RestifyICal = function(config) {
             }
 
             shoots.forEach(function (shoot, inx) {
-                var shortDesc = shoot.description;
+                var shortDesc = shoot.description.split('.')[0];
 
                 shoot.schedule.forEach(function (sched, schedInx) {
                     var event = cal.createEvent({
