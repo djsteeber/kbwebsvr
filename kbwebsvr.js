@@ -21,6 +21,7 @@ var rmep = require('./restify-mep');
 var schemas = require('./schemas');
 var Auth = require('./auth');
 var SecureDoc = require('./secure-doc');
+var pluralize = require('pluralize');
 
 
 var mongodb_inst = mongojs(kwsEnv.mongodb_uri, []);
@@ -59,8 +60,9 @@ auth.createEndPoints(server);
 
 // add a rest point for all items in the schema map
 for (var key in schemas) {
+    var name = pluralize.plural(key);
     rmep.createEndPoint(server, 'CRUD'
-                   ,{name: key + 's', basePath: '/rest', schema: schemas[key]});
+                   ,{name: name, basePath: '/rest', schema: schemas[key]});
 }
 
 var secureDoc = new SecureDoc(kwsEnv.secure_doc_root);

@@ -12,11 +12,17 @@ var gulp = require('gulp'),
     clean = require('gulp-clean'),
     gnf = require('gulp-npm-files');
 
+//TODO:  might change the config based on where I want to deploy to
+var SSH_CONFIG = {
+    host: 'new.kenoshabowmen.com',
+    port: 22,
+    username: 'kbweb',
+    privateKey: fs.readFileSync(process.env["HOME"] + '/.ssh/id_rsa')
+};
+
 
 gulp.task('clean', function() {
-    gulp.src('./dist', {read: false})
-        .pipe(clean({force:true}));
-    gulp.src('./stage', {read: false})
+    return gulp.src(['./dist', './stage'], {read: false})
         .pipe(clean({force:true}));
 
 });
@@ -33,70 +39,53 @@ gulp.task('copy-dist', [], function() {
         'restify-mep.js',
         'package.json'
     ];
-    gulp.src(jsFiles)
+    return gulp.src(jsFiles)
         .pipe(gulp.dest('./dist'));
+
 });
 
 
-gulp.task('package', function() {
+gulp.task('package', ['copy-dist'], function() {
     var tar = require('gulp-tar');
     var gzip = require('gulp-gzip');
 
-        gulp.src('./dist/**/*')
+    return gulp.src('./dist/**/*')
         .pipe(tar('kbwebsvr.tar'))
         .pipe(gzip())
         .pipe(gulp.dest('./stage/'));
 });
 
-gulp.task('ship', function(callback) {
+gulp.task('ship', function() {
     var GulpSSH = require('gulp-ssh')
-    var privateKeyPath = process.env["HOME"] + '/.ssh/id_rsa';
-
-    var config = {
-        host: 'kbweb.steeber.net',
-        port: 22,
-        username: 'deployweb',
-        privateKey: fs.readFileSync(privateKeyPath)
-    };
-
 
     var gulpSSH = new GulpSSH({
         ignoreErrors: false,
-        sshConfig: config
+        sshConfig: SSH_CONFIG
     });
 
     return gulp.src('./stage/kbwebsvr.tar.gz')
-        .pipe(gulpSSH.sftp('write', '/var/web/stage/kbwebsvr.tar.gz'));
+        .pipe(gulpSSH.sftp('write', '/opt/web/stage/kbwebsvr.tar.gz'));
 
 });
 
 gulp.task('deploy', function(callback) {
     var GulpSSH = require('gulp-ssh')
-    var privateKeyPath = process.env["HOME"] + '/.ssh/id_rsa';
-
-    var config = {
-        host: 'kbweb.steeber.net',
-        port: 22,
-        username: 'deployweb',
-        privateKey: fs.readFileSync(privateKeyPath)
-    };
-
 
     var gulpSSH = new GulpSSH({
         ignoreErrors: false,
-        sshConfig: config
+        sshConfig: SSH_CONFIG
     });
 
     // change this to execute a tar -xzf command from the directory
     return gulpSSH.shell([
-        'cd /var/web/kbwebsvr',
-        'tar -czf ../stage/kbwebsvr-bak.$(date +%Y%m%d%H%M).tar.gz *.js',
-        'cp kbwebsvr-env.js ../stage/.',
-        'rm -rf *.js',
-        'tar -xzf ../stage/kbwebsvr.tar.gz',
-        'cp ../stage/kbwebsvr-env.js .',
-        'npm install --only=production',
-        'sleep 3;pm2 restart kbwebsvr'],
+            'cd /opt/web/kbwebsvr',
+            'tar -czf ../stage/kbwebsvr-bak.$(date +%Y%m%d%H%M).tar.gz *.js',
+            'cp kbwebsvr-env.js ../stage/.',
+            'rm -rf *.js',
+            'tar -xzf ../stage/kbwebsvr.tar.gz',
+            'cp ../stage/kbwebsvr-env.js .',
+            'npm install --only=production',
+            'sleep 3;pm2 restart kbwebsvr'],
         {filePath: 'deploy.log'})
         .pipe(gulp.dest('./stage'));
 
@@ -104,28 +93,18 @@ gulp.task('deploy', function(callback) {
 
 gulp.task('restart', function(callback) {
     var GulpSSH = require('gulp-ssh')
-    var privateKeyPath = process.env["HOME"] + '/.ssh/id_rsa';
-
-    var config = {
-        host: 'kbweb.steeber.net',
-        port: 22,
-        username: 'deployweb',
-        privateKey: fs.readFileSync(privateKeyPath)
-    };
-
 
     var gulpSSH = new GulpSSH({
         ignoreErrors: false,
-        sshConfig: config
+        sshConfig: SSH_CONFIG
     });
 
     // change this to execute a tar -xzf command from the directory
     return gulpSSH.shell([
-        'pm2 restart kbwebsvr',
+            'pm2 restart kbwebsvr',
 
-        'pm2 prettylist'],
+            'pm2 prettylist'],
         {filePath: 'deploy.log'})
         .pipe(gulp.dest('./stage'));
 
 });
-

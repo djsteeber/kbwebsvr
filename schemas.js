@@ -41,6 +41,9 @@ var shoot = Object.assign(event, {
     ,results: {isFile:true}  // change to points to document
 });
 
+var meeting = event;
+var workParty = event;
+
 
 var personsName = {
      firstName: reqString
@@ -94,7 +97,7 @@ var announcement = {
 
 
 var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message, document: document
-    , shoot: shoot, announcement: announcement};
+    , shoot: shoot, announcement: announcement, workParty: workParty, meeting: meeting};
 module.exports = schemaMap;
 
 
