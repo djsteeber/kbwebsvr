@@ -14,7 +14,11 @@ var RestifyICal = function(config) {
     self.config = config;
 
     self.sendICal = function(req, res, next) {
-        var cal = ical({domain: 'kenoshabowmen.com', name: 'Shoots'});
+        var cal = ical({
+            domain: 'kenoshabowmen.com',
+            name: 'Shoots',
+            timezone: 'America/Chicago'
+        });
         var collection = config.db.collection('shoots');
         collection.find({}, function(err, shoots) {
             if (err) {
