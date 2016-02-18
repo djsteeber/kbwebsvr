@@ -39,7 +39,8 @@ var RestifyICal = function(config) {
                         end: sched.end,
                         summary: shortDesc,
                         description: shoot.description,
-                        url: 'http://new.kenoshabowmen.com/shoots/' + shoot._id
+                        url: 'http://new.kenoshabowmen.com/shoots/' + shoot._id,
+                        timezone: 'America/Chicago'
                     });
                     if (sched.repeat) {
                         event.repeating({
