@@ -28,7 +28,7 @@ var RestifyICal = function(config) {
                 email: 'kenoshabowmen@gmail.com',
                 //sentBy: 'kenoshabowmen@gmail.com' //OPTIONAL email address of the person who is acting on behalf of organizer.
             },
-            alarms: [1440, 60], // 1 day, 1 hour prior
+            //alarms: [1440, 60], // 1 day, 1 hour prior  no alarms since this needs a description field
 
             url: 'http://new.kenoshabowmen.com/shoots/' + shoot._id
         };
