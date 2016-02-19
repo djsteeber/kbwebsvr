@@ -1,10 +1,7 @@
 var fs = require('fs');
 var restify = require('restify');
 var mongojs = require('mongojs');
-var ical = require('ical-generator');
-
-var JSON_CONTENT = {'Content-Type': 'application/json; charset=utf-8'};
-
+var icalToolkit = require('ical-toolkit');
 
 
 var RestifyICal = function(config) {
@@ -13,12 +10,47 @@ var RestifyICal = function(config) {
 
     self.config = config;
 
+
+    var createEvent = function(shoot, sched) {
+        var shortDesc = shoot.description.split('.')[0];
+        //   if (_event.organizer) lines.push('ORGANIZER;' + (!!_event.organizer.sentBy ? ('SENT-BY="MAILTO:' + _event.organizer.sentBy + '":') : '') + 'CN="' + _event.organizer.name.replace(/"/g, '\\"') + '":mailto:' + _event.organizer.email);
+
+        var evt = { //Event start time, Required: type Date()
+            start: sched.start,
+            end: sched.end,
+            summary: shortDesc,
+            uid: shoot._id,
+            location: 'Kenosha Bowmen Club',
+            description: shoot.description,
+            method: 'PUBLISH',
+            organizer: {
+                name: 'Kenosha Bowmen',
+                email: 'kenoshabowmen@gmail.com',
+                //sentBy: 'kenoshabowmen@gmail.com' //OPTIONAL email address of the person who is acting on behalf of organizer.
+            },
+            alarms: [1440, 60], // 1 day, 1 hour prior
+
+            url: 'http://new.kenoshabowmen.com/shoots/' + shoot._id
+        };
+        if (sched.repeat) {
+            evt.repeating = {
+                freq: sched.repeat,
+                count: sched.repeatCount
+            };
+        }
+        return evt;
+
+    }
+
     self.sendICal = function(req, res, next) {
-        var cal = ical({
-            domain: 'kenoshabowmen.com',
-            name: 'Shoots',
-            timezone: 'America/Chicago'
-        });
+        var builder = icalToolkit.createIcsFileBuilder();
+        builder.calname = 'Kenosha Bowmen Shoots';
+        //Cal timezone 'X-WR-TIMEZONE' tag. Optional. We recommend it to be same as tzid.
+        builder.timezone = 'america/chicago';
+        //Time Zone ID. This will automatically add VTIMEZONE info.
+        builder.tzid = builder.timezone; // ensure the same
+        builder.spacers = false;
+
         var collection = config.db.collection('shoots');
         collection.find({}, function(err, shoots) {
             if (err) {
@@ -30,31 +62,15 @@ var RestifyICal = function(config) {
             }
 
             shoots.forEach(function (shoot, inx) {
-                var shortDesc = shoot.description.split('.')[0];
-
                 shoot.schedule.forEach(function (sched, schedInx) {
-                    var event = cal.createEvent({
-                        id: shoot._id,
-                        start: sched.start,
-                        end: sched.end,
-                        summary: shortDesc,
-                        description: shoot.description,
-                        url: 'http://new.kenoshabowmen.com/shoots/' + shoot._id,
-                        timezone: 'America/Chicago'
-                    });
-                    if (sched.repeat) {
-                        event.repeating({
-                            freq: sched.repeat,
-                            count: sched.repeatCount
-                        });
-                    }
+                    builder.events.push(createEvent(shoot, sched));
                 });
             });
             res.writeHead(200, {
                 'Content-Type': 'text/calendar'
             });
 
-            res.end(cal.toString());
+            res.end(builder.toString());
         });
     };
 
