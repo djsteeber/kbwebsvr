@@ -12,13 +12,12 @@ var RestifyICal = function(config) {
 
 
     var createEvent = function(shoot, sched) {
-        var shortDesc = shoot.description.split('.')[0];
         //   if (_event.organizer) lines.push('ORGANIZER;' + (!!_event.organizer.sentBy ? ('SENT-BY="MAILTO:' + _event.organizer.sentBy + '":') : '') + 'CN="' + _event.organizer.name.replace(/"/g, '\\"') + '":mailto:' + _event.organizer.email);
 
         var evt = { //Event start time, Required: type Date()
             start: sched.start,
             end: sched.end,
-            summary: shortDesc,
+            summary: shoot.name,
             uid: shoot._id,
             location: 'Kenosha Bowmen Club',
             description: shoot.description,
@@ -28,9 +27,9 @@ var RestifyICal = function(config) {
                 email: 'kenoshabowmen@gmail.com',
                 //sentBy: 'kenoshabowmen@gmail.com' //OPTIONAL email address of the person who is acting on behalf of organizer.
             },
-            //alarms: [1440, 60], // 1 day, 1 hour prior  no alarms since this needs a description field
+            alarms: [1440, 60], // 1 day, 1 hour prior  no alarms since this needs a description field
 
-            url: 'http://new.kenoshabowmen.com/shoots/' + shoot._id
+            url: 'http://new.kenoshabowmen.com/#shoot/' + shoot._id
         };
         if (sched.repeat) {
             evt.repeating = {
