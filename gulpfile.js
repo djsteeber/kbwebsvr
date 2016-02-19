@@ -92,6 +92,22 @@ gulp.task('deploy', function(callback) {
 
 });
 
+gulp.task('status', function(callback) {
+    var GulpSSH = require('gulp-ssh')
+
+    var gulpSSH = new GulpSSH({
+        ignoreErrors: false,
+        sshConfig: SSH_CONFIG
+    });
+
+    // change this to execute a tar -xzf command from the directory
+    return gulpSSH.shell([
+            'pm2 list'],
+        {filePath: 'status.log'})
+        .pipe(gulp.dest('./stage'));
+
+});
+
 gulp.task('restart', function(callback) {
     var GulpSSH = require('gulp-ssh')
 
