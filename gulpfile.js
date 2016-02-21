@@ -37,6 +37,7 @@ gulp.task('copy-dist', [], function() {
         'json-schema-convertor.js',
         'json-schema-validator.js',
         'restify-mep.js',
+        'restify-ical.js',
         'package.json'
     ];
     return gulp.src(jsFiles)
@@ -87,6 +88,22 @@ gulp.task('deploy', function(callback) {
             'npm install --only=production',
             'sleep 3;pm2 restart kbwebsvr'],
         {filePath: 'deploy.log'})
+        .pipe(gulp.dest('./stage'));
+
+});
+
+gulp.task('status', function(callback) {
+    var GulpSSH = require('gulp-ssh')
+
+    var gulpSSH = new GulpSSH({
+        ignoreErrors: false,
+        sshConfig: SSH_CONFIG
+    });
+
+    // change this to execute a tar -xzf command from the directory
+    return gulpSSH.shell([
+            'pm2 list'],
+        {filePath: 'status.log'})
         .pipe(gulp.dest('./stage'));
 
 });

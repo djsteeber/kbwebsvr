@@ -2,7 +2,8 @@ var fs = require('fs');
 var mongojs = require('mongojs');
 var phash = require('password-hash-and-salt');
 
-
+//TODO Runs too quick or slow on server that the inserts do not run before the close statement.
+//maybe a good place for async package
 var now = Date.now();
 
 var shoots = [
@@ -33,8 +34,8 @@ var shoots = [
         shootType: "Shoot",
         range: ["Indoor Range"],
         flyer: { url: "/misc_docs/shoots/20163Dflyer.png", name: "20163Dflyer.png" },
-        schedule: [{start: "January 16, 2016 08:00", end: "January 16, 2016 16:00", finalDate: "January 16, 2016 15:00"},
-            {start: new Date("January 16, 2016 08:00"), end: new Date("January 16, 2016 15:00")}],
+        schedule: [{start: new Date("January 16, 2016 08:00"), end: new Date("January 16, 2016 15:00")},
+            {start: new Date("January 17, 2016 08:00"), end: new Date("January 17, 2016 15:00")}],
         scheduleStartDate: new Date("January 16, 2016 08:00"),
         scheduleEndDate: new Date("January 17, 2016 15:00"),
         created: now,
@@ -259,14 +260,34 @@ var announcements = [
         start : new Date("January 1, 2016 01:00"),
         end : new Date("March 3, 2016 23:00")}
 
-]
+];
+
+
+var async = require('async');
 
 
 //create the collections based on the schemas
 var db = mongojs('mongodb://localhost/archeryweb', []);
 
 var collection = db.collection('shoots');
+collection.remove();
 
+
+var insertItem = function(item, callback) {
+    collection.insert(item, function(err, result) {
+        console.log(JSON.stringify(item));
+        callback();
+    });
+};
+
+var allDone = function(err) {
+    console.log('closing the connection');
+    db.close();
+}
+
+async.each(shoots, insertItem, allDone);
+
+/*
 collection.remove();
 for (var shoot in shoots) {
     console.log(JSON.stringify(shoots[shoot]));
@@ -280,10 +301,9 @@ for (var item in announcements) {
     console.log(JSON.stringify(announcements[item]));
     collection.insert(announcements[item]);
 }
+*/
 
-
-console.log('done');
-db.close();
+//db.close();
 
 
 
