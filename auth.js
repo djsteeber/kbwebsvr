@@ -1,10 +1,4 @@
 /**
- * TODO:  Replace the code in here with passport.js.  This will allow for multiple authentication methods.
- *        Still need to associate user with roles.  Start with local strategy and work up from there.
- *        Will need a change in how things are called.  I still like the filter approach as opposed to putting it on
- *        each endpoint call.  Routing is a little different.  Just need to send back an response code, so the
- *        1 page front end can respond appropriately.  401 is for unauthenticated.  403 is for authed but
- *        insufficient priviledges
  * @type {*|exports|module.exports}
  */
 
@@ -247,6 +241,51 @@ function Auth(config) {
             });
             res.writeHead(200, JSON_CONTENT);
             res.end(JSON.stringify({message: "logout complete"}));
+        });
+
+        server.post("/auth/forgotPassword", function(req,res,next) {
+            var code = (req.body && req.body.code) ? req.body.code : null;
+            var email = (req.body && req.body.username) ? req.body.username : null;
+
+            if (code != "1401") {
+                res.writeHead(401, JSON_CONTENT);
+                res.end(JSON.stringify({message: "request denied"}));
+                return;
+            }
+
+            //TODO:  add in process to send email to the user
+            try {
+                var collection = self.config.db.collection('users');
+                collection.findOne({"email": email}, function (err, user) {
+                    if (err) {
+                        res.writeHead(401, JSON_CONTENT);
+                        res.end(JSON.stringify({message: "request denied"}));
+                        return;
+                    }
+                    console.log("user found " + JSON.stringify(user.name));
+
+                    var prCollection = self.config.db.collection('passwordReset');
+                    prCollection.insert({userID: user._id, name: user.name, login: user.login, email: user.email}, function (err) {
+                        if (err) {
+                            console.log(err);
+                            res.writeHead(500, JSON_CONTENT);
+                            res.end(JSON.stringify({message: "Issue writing reset request"}));
+                            return;
+                        }
+                        console.log("Record inserted into prCollection");
+
+                        res.writeHead(200, JSON_CONTENT);
+                        res.end(JSON.stringify({message: "request accepted"}));
+                    });
+
+
+                });
+            } catch (exc) {
+                console.log(exc);
+                res.writeHead(500, JSON_CONTENT);
+                res.end(JSON.stringify({message: "error"}));
+            }
+
         });
 
     };
