@@ -116,10 +116,12 @@ function Auth(config) {
 
             collection.findOne({_id: oid}, function(err, user) {
                 if (err) {
-                    return done(null, false, { error: 'Incorrect username or password.' });
+                    return done(null, false, {error: 'Incorrect username or password.'});
                 }
                 // verify the password in the hash
-                user.password = undefined;
+                if (user) {
+                    delete user.password;
+                }
 
                 return done(null, user);
             });
