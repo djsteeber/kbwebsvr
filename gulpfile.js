@@ -40,7 +40,7 @@ gulp.task('copy-dist', [], function() {
         'restify-ical.js',
         'package.json',
         'google-generated-creds.json',
-        'load-users.js',
+        'load-user.js',
         'forgotpwdjob.js'
     ];
     return gulp.src(jsFiles)

@@ -202,11 +202,8 @@ function Auth(config) {
                     }
                     req.session.user_id = req.user.id;
 
-                    if(user.username) {
-                        res.json({ success: 'Welcome ' + user.username + "!"});
-                        return next();
-                    }
-                    res.json({ success: 'Welcome!'});
+                    var changePassword = (user.hasOwnProperty('changePassword')) ? user.changePassword : false;
+                    res.json({ success: 'Welcome!', changePassword: changePassword});
                     return next();
                 });
 
@@ -222,8 +219,11 @@ function Auth(config) {
         server.get("/auth/login", function(req,res,next) {
             if (req.user && req.isAuthenticated()) {
                 res.writeHead(200, JSON_CONTENT);
-                var rtn = {authenticated: true, message: 'Authenticated',
-                user: {name: req.user.name, email: req.user.email, roles: req.user.roles}};
+                var changePassword = (req.user.hasOwnProperty('changePassword')) ? req.user.changePassword : false;
+                var rtn = {
+                    authenticated: true,
+                    message: 'Authenticated',
+                    user: req.user};
                 res.end(JSON.stringify(rtn));
             } else {
                 res.writeHead(200, JSON_CONTENT);
