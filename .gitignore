@@ -31,3 +31,4 @@ node_modules
 
 # ignore the configuration
 kbwebsvr-env.js
+googel-generated-creds.json
