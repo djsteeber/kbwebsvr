@@ -41,6 +41,7 @@ gulp.task('copy-dist', [], function() {
         'package.json',
         'google-generated-creds.json',
         'load-user.js',
+        'load-announcements.js',
         'forgotpwdjob.js'
     ];
     return gulp.src(jsFiles)
