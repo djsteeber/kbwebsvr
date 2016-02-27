@@ -3,7 +3,6 @@ var kwsEnv = require('./kbwebsvr-env');
 var GoogleSpreadsheet = require("google-spreadsheet");
 var async = require('async');
 
-//api key:   AIzaSyB9PkzGnnaIa8u6oyrDUokel667D_ieXr8
 // spreadsheet key is the long id in the sheets URL
 var spreadsheet = new GoogleSpreadsheet('1vQ1gs2PFGfjRx-Mngz7QGcRuqJszGUu6PmGkAuVFl3M');
 
@@ -16,7 +15,6 @@ var mongodb_inst = mongojs(kwsEnv.mongodb_uri, []);
 var userCollection = mongodb_inst.collection('users');
 var prCollection = mongodb_inst.collection('passwordReset');
 
-
 var allDone = function() {
     console.log('done');
     mongodb_inst.close();
@@ -25,33 +23,6 @@ var allDone = function() {
 //TODO:  change this to call the internal rest service so that we do not need
 //       to worry about the structure, just to keep clean with the rest endpoint and validation schema
 //       for now, a hand hacked version that injects into mongo will work
-
-/*
-
- var personsName = {
- firstName: reqString
- ,lastName: reqString
- ,fullName: {isString: true}
- };
-
- var user = {
- login: {isString: true, isRequired: true, isUnique: true}
- ,name: {isObject: personsName}
- ,email: {isEmail: true, isUnique: true}
- ,password: {isString: true, isRequired: false, isUnique: false, isPassword: true}
- ,roles: {isRequired:true, isOneOf: [['ADMIN', 'MEMBER', 'GUEST']]} // move these roles to a roles.js file
- };
-
- var userProfile = {
- user : {pointsTo : 'users'}
- ,spouse : {isObject: personsName }
- ,phone: {isArrayOf: phoneType }
- ,additionalClubs : {isArrayOf : {clubName : reqString}}
- ,familyMembers : { isArrayOf: personsName}
- ,skills : {isArrayOf : {name : reqString}}
- };
-
- */
 
 var addResetPasswordRequest = function(user, callback) {
     var passwordRequest = {
@@ -125,8 +96,8 @@ var processRow = function(row, callback) {
     };
 
     // so we want to find the user, and if found, update date it, if not add it
-    if (row.email) {
-        userCollection.findOne({login: row.email.toLowerCase()}, function(err, foundUser) {
+    if (user.login) {
+        userCollection.findOne({login: user.login.toLowerCase()}, function(err, foundUser) {
             if (err) {
                 console.log(err);
                 return callback();
@@ -144,7 +115,7 @@ var processRow = function(row, callback) {
                 // need to create a password, as well as a passwwordReset request
                 addNewUser(user, callback);
             }
-        })
+        });
     }
 
 };
@@ -162,16 +133,10 @@ var authCallBack = function(err) {
     if (err) {
         console.log(err);
     } else {
-        spreadsheet.getRows( 1, {query: 'lastname = "Steeber"', limit: 2}, processRows);
-        // query should be {query: 'email = ""', limit: 2}
+        spreadsheet.getRows( 1, {query: 'lastname != ""'}, processRows);
+        // query should be {query: 'email = ""'}
     }
-}
-
-
-
-
-
-
+};
 
 
 spreadsheet.useServiceAccountAuth(account_creds, authCallBack);
