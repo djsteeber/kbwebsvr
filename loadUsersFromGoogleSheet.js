@@ -4,13 +4,12 @@ var GoogleSpreadsheet = require("google-spreadsheet");
 var async = require('async');
 
 // spreadsheet key is the long id in the sheets URL
-var spreadsheet = new GoogleSpreadsheet('1vQ1gs2PFGfjRx-Mngz7QGcRuqJszGUu6PmGkAuVFl3M');
+var spreadsheet = new GoogleSpreadsheet(kwsEnv.googleMembersSheet);
 var spreadsheetFilter = 'lastname != ""';
 
 var account_creds = require('./google-generated-creds.json');
 // note: client email in the account credentials need to be given access to the sheet
 
-var kwsEnv = require('./kbwebsvr-env');
 
 var mongodb_inst = mongojs(kwsEnv.mongodb_uri, []);
 var userCollection = mongodb_inst.collection('users');
