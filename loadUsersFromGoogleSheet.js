@@ -5,6 +5,7 @@ var async = require('async');
 
 // spreadsheet key is the long id in the sheets URL
 var spreadsheet = new GoogleSpreadsheet('1vQ1gs2PFGfjRx-Mngz7QGcRuqJszGUu6PmGkAuVFl3M');
+var spreadsheetFilter = 'lastname != ""';
 
 var account_creds = require('./google-generated-creds.json');
 // note: client email in the account credentials need to be given access to the sheet
@@ -112,7 +113,6 @@ var processRow = function(row, callback) {
                 console.log("user not found, insert");
                 console.log(row.email);
 
-                // need to create a password, as well as a passwwordReset request
                 addNewUser(user, callback);
             }
         });
@@ -133,11 +133,18 @@ var authCallBack = function(err) {
     if (err) {
         console.log(err);
     } else {
-        spreadsheet.getRows( 1, {query: 'lastname != ""'}, processRows);
+        console.log("running spreadsheet query by " + spreadsheetFilter);
+        spreadsheet.getRows( 1, {query: spreadsheetFilter}, processRows);
         // query should be {query: 'email = ""'}
     }
 };
 
+if (process.argv.length > 2) {
+    var parts = process.argv[2].split('=');
+    if (parts.length == 2) {
+        spreadsheetFilter = parts[0] + '=' + '"' + parts[1] + '"';
+    }
+}
 
 spreadsheet.useServiceAccountAuth(account_creds, authCallBack);
 
