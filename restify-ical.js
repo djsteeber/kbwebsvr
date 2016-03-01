@@ -24,7 +24,7 @@ var RestifyICal = function(config) {
             method: 'PUBLISH',
             organizer: {
                 name: 'Kenosha Bowmen',
-                email: 'kenoshabowmen@gmail.com',
+                email: 'kenoshabowmen@gmail.com'
                 //sentBy: 'kenoshabowmen@gmail.com' //OPTIONAL email address of the person who is acting on behalf of organizer.
             },
             alarms: [1440, 60], // 1 day, 1 hour prior  no alarms since this needs a description field
@@ -39,9 +39,9 @@ var RestifyICal = function(config) {
         }
         return evt;
 
-    }
+    };
 
-    self.sendICal = function(req, res, next) {
+    self.sendICal = function(req, res /*, next */) {
         var builder = icalToolkit.createIcsFileBuilder();
         builder.calname = 'Kenosha Bowmen Shoots';
         //Cal timezone 'X-WR-TIMEZONE' tag. Optional. We recommend it to be same as tzid.
@@ -60,8 +60,8 @@ var RestifyICal = function(config) {
                 return;
             }
 
-            shoots.forEach(function (shoot, inx) {
-                shoot.schedule.forEach(function (sched, schedInx) {
+            shoots.forEach(function (shoot /*, inx */) {
+                shoot.schedule.forEach(function (sched /* , schedInx */) {
                     builder.events.push(createEvent(shoot, sched));
                 });
             });

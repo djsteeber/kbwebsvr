@@ -1,10 +1,4 @@
 /**
- * TODO:  Replace the code in here with passport.js.  This will allow for multiple authentication methods.
- *        Still need to associate user with roles.  Start with local strategy and work up from there.
- *        Will need a change in how things are called.  I still like the filter approach as opposed to putting it on
- *        each endpoint call.  Routing is a little different.  Just need to send back an response code, so the
- *        1 page front end can respond appropriately.  401 is for unauthenticated.  403 is for authed but
- *        insufficient priviledges
  * @type {*|exports|module.exports}
  */
 
@@ -106,6 +100,23 @@ function Auth(config) {
         return false;
     };
 
+    var verifyUser = function(username, password, done) {
+        var collection = self.config.db.collection('users');
+
+
+        collection.findOne({"login": username.toLowerCase()}, function(err, user) {
+            if (err) {
+                return done(null, false, { error: 'Incorrect username or password.' });
+            }
+
+            // verify the password in the hash
+            phash(password).verifyAgainst(user.password, function(error, verified) {
+                if (error || !verified) return done(null, false, { error: 'Incorrect username or password.' });
+                return done(null, user);
+            });
+        });
+    };
+
     /**
      *
      * @returns {Array} of functions to load into restify server use chain
@@ -122,10 +133,12 @@ function Auth(config) {
 
             collection.findOne({_id: oid}, function(err, user) {
                 if (err) {
-                    return done(null, false, { error: 'Incorrect username or password.' });
+                    return done(null, false, {error: 'Incorrect username or password.'});
                 }
                 // verify the password in the hash
-                user.password = undefined;
+                if (user) {
+                    delete user.password;
+                }
 
                 return done(null, user);
             });
@@ -137,22 +150,6 @@ function Auth(config) {
         var mongodb_inst = self.config.db;
 
     // Lookup a user in our database
-        var verifyUser = function(username, password, done) {
-            var collection = mongodb_inst.collection('users');
-
-
-            collection.findOne({"login": username.toLowerCase()}, function(err, user) {
-                if (err) {
-                    return done(null, false, { error: 'Incorrect username or password.' });
-                }
-
-                // verify the password in the hash
-                phash(password).verifyAgainst(user.password, function(error, verified) {
-                    if (error || !verified) return done(null, false, { error: 'Incorrect username or password.' });
-                    return done(null, user);
-                });
-            });
-        };
 
         passport.use(new LocalStrategy({ usernameField: 'username', session: true }, verifyUser));
 
@@ -206,11 +203,8 @@ function Auth(config) {
                     }
                     req.session.user_id = req.user.id;
 
-                    if(user.username) {
-                        res.json({ success: 'Welcome ' + user.username + "!"});
-                        return next();
-                    }
-                    res.json({ success: 'Welcome!'});
+                    var changePassword = (user.hasOwnProperty('changePassword')) ? user.changePassword : false;
+                    res.json({ success: 'Welcome!', changePassword: changePassword});
                     return next();
                 });
 
@@ -226,8 +220,11 @@ function Auth(config) {
         server.get("/auth/login", function(req,res,next) {
             if (req.user && req.isAuthenticated()) {
                 res.writeHead(200, JSON_CONTENT);
-                var rtn = {authenticated: true, message: 'Authenticated',
-                user: {name: req.user.name, email: req.user.email, roles: req.user.roles}};
+                var changePassword = (req.user.hasOwnProperty('changePassword')) ? req.user.changePassword : false;
+                var rtn = {
+                    authenticated: true,
+                    message: 'Authenticated',
+                    user: req.user};
                 res.end(JSON.stringify(rtn));
             } else {
                 res.writeHead(200, JSON_CONTENT);
@@ -247,6 +244,100 @@ function Auth(config) {
             });
             res.writeHead(200, JSON_CONTENT);
             res.end(JSON.stringify({message: "logout complete"}));
+        });
+
+        server.post("/auth/forgotPassword", function(req,res,next) {
+            var code = (req.body && req.body.code) ? req.body.code : null;
+            var email = (req.body && req.body.username) ? req.body.username : null;
+
+            if (code != "1401") {
+                res.writeHead(401, JSON_CONTENT);
+                res.end(JSON.stringify({message: "request denied"}));
+                return;
+            }
+
+            try {
+                var collection = self.config.db.collection('users');
+                collection.findOne({"email": email}, function (err, user) {
+                    if (err) {
+                        res.writeHead(401, JSON_CONTENT);
+                        res.end(JSON.stringify({message: "request denied"}));
+                        return;
+                    }
+                    console.log("user found " + JSON.stringify(user.name));
+
+                    var prCollection = self.config.db.collection('passwordReset');
+                    prCollection.insert({userID: user._id, name: user.name, login: user.login, email: user.email}, function (err) {
+                        if (err) {
+                            console.log(err);
+                            res.writeHead(500, JSON_CONTENT);
+                            res.end(JSON.stringify({message: "Issue writing reset request"}));
+                            return;
+                        }
+                        console.log("Record inserted into prCollection");
+
+                        res.writeHead(200, JSON_CONTENT);
+                        res.end(JSON.stringify({message: "request accepted"}));
+                    });
+
+
+                });
+            } catch (exc) {
+                console.log(exc);
+                res.writeHead(500, JSON_CONTENT);
+                res.end(JSON.stringify({message: "error"}));
+            }
+
+        });
+
+        //TODO HERE
+        /*
+         var data = {currentPassword: currentPassword, newPassword: self.newPassword};
+
+         $.ajax({
+         url: "/auth/changePassword",
+
+         */
+        server.post("/auth/changePassword", function(req, res, next) {
+            var currentPassword = (req.body) ? req.body.currentPassword : null;
+            var newPassword = (req.body) ? req.body.newPassword : null;
+
+            // check if the request is authenticated
+            if (! req.isAuthenticated()) {
+                res.writeHead(401, JSON_CONTENT);
+                res.end(JSON.stringify({message: "You must be logged in to change your password."}));
+                return;
+            }
+
+            //TODO  add password complexity here
+            verifyUser(req.user.login, currentPassword, function(err, user) {
+                if (err) {
+                    res.writeHead(401, JSON_CONTENT);
+                    res.end(JSON.stringify({message: "Either not authenticated or your current password is wrong."}));
+                    return;
+                }
+                // update the user hashing in the new password
+                //TODO  This type of code is done in forgotpwdjob seems redundant and should be a helper function
+                phash(newPassword).hash(function (err, hashedpassword){
+                    if (err) {
+                        res.writeHead(500, JSON_CONTENT);
+                        res.end(JSON.stringify({message: "Unable to create the new password."}));
+                        return;
+                    }
+                    user.password = hashedpassword;
+                    var userCollection = self.config.db.collection('users');
+                    userCollection.update({_id: user._id}, user, {multi: false}, function (err, data) {
+                        console.log("updating user " + user.name.fullName + ' to ' + newPassword );
+                        if (err) {
+                            res.writeHead(500, JSON_CONTENT);
+                            res.end(JSON.stringify({message: "Unable to update the new password."}));
+                        } else {
+                            res.writeHead(200, JSON_CONTENT);
+                            res.end(JSON.stringify({message: "Password successfully updated."}));
+                        }
+                    });
+                });
+            });
         });
 
     };

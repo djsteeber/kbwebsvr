@@ -63,7 +63,7 @@ auth.createEndPoints(server);
 for (var key in schemas) {
     var name = pluralize.plural(key);
     rmep.createEndPoint(server, 'CRUD'
-                   ,{name: name, basePath: '/rest', schema: schemas[key]});
+        , {name: name, basePath: '/rest', schema: schemas[key]});
 }
 
 var secureDoc = new SecureDoc(kwsEnv.secure_doc_root);

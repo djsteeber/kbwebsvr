@@ -38,15 +38,29 @@ gulp.task('copy-dist', [], function() {
         'json-schema-validator.js',
         'restify-mep.js',
         'restify-ical.js',
-        'package.json'
+        'package.json',
+        'google-generated-creds.json',
+        'loadUsersFromGoogleSheet.js',
+        'load-announcements.js',
+        'forgotpwdjob.js'
     ];
     return gulp.src(jsFiles)
         .pipe(gulp.dest('./dist'));
 
 });
 
+gulp.task('copy-config', [], function() {
+    var jsFiles = [
+        'config/*.*'
+    ];
+    return gulp.src(jsFiles)
+        .pipe(gulp.dest('./dist/config'));
 
-gulp.task('package', ['copy-dist'], function() {
+});
+
+
+
+gulp.task('package', ['copy-dist','copy-config'], function() {
     var tar = require('gulp-tar');
     var gzip = require('gulp-gzip');
 
