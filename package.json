@@ -24,6 +24,7 @@
     "fs-extra": "^0.26.4",
     "generate-password": "^1.1.1",
     "google-auth-library": "^0.9.7",
+    "google-caja-sanitizer": "^1.0.4",
     "google-spreadsheet": "^1.1.4",
     "googleapis": "^2.1.7",
     "ical-generator": "^0.2.7",
