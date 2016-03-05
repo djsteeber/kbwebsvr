@@ -125,8 +125,7 @@ var processAll = function() {
 
 };
 
-//setInterval(processAll, 1000 * 60);
+setInterval(processAll, 1000 * 60);
 
-processAll();
 
 
