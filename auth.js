@@ -258,7 +258,7 @@ function Auth(config) {
 
             try {
                 var collection = self.config.db.collection('users');
-                collection.findOne({"email": email}, function (err, user) {
+                collection.findOne({"email": email.toLowerCase()}, function (err, user) {
                     if (err) {
                         res.writeHead(401, JSON_CONTENT);
                         res.end(JSON.stringify({message: "request denied"}));

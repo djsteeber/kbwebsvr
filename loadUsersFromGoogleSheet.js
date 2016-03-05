@@ -81,14 +81,14 @@ var processRow = function(row, callback) {
         roles.push('MEMBER');
     }
     var user = {
-        login: row.email,
+        login: row.email.toLowerCase(),
         name: name,
-        email: row.email,
+        email: row.email.toLowerCase(),
         roles: roles,
         spouse : row.spouse,
         phone: row.phone,
         address: {address: row.address, city: row.city, state: row.state, zip: row.zip},
-        hours: (row.hours) ? parseInt(row.hours) : 0,
+        hours: (row.hours) ? parseFloat(row.hours).toFixed(2) : 0,
         exempt: (row.exempt && (row.exempt == 'Lifetime')) ? true : false
         //joindate
         //sponsor
