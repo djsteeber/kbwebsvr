@@ -42,7 +42,7 @@ gulp.task('copy-dist', [], function() {
         'google-generated-creds.json',
         'loadUsersFromGoogleSheet.js',
         'load-announcements.js',
-        'forgotpwdjob.js'
+        'resetPasswordJob.js'
     ];
     return gulp.src(jsFiles)
         .pipe(gulp.dest('./dist'));
