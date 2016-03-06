@@ -26,7 +26,7 @@ var RestifyICal = require('./restify-ical');
 
 
 var mongodb_inst = mongojs(kwsEnv.mongodb_uri, []);
-var auth = new Auth({db: mongodb_inst});
+var auth = new Auth({db: mongodb_inst, session_timeout: kwsEnv.session_timeout});
 
 rmep.setConfig({db: mongodb_inst
     ,secure: false

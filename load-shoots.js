@@ -21,7 +21,7 @@ var shoots = [
         description: "Thursday Indoor League.",
         shootType: "League",
         range: ["Indoor Range"],
-        flyer: { url: "/misc_docs/shoots/2016YouthLeague.jpg", name: "2016YouthLeague.jpg" },
+        flyer: { url: "/misc_docs/shoots/2016YouthLeague.png", name: "2016YouthLeague.png" },
         schedule: [{start: new Date("January 7, 2016 15:00"), end: new Date("January 7, 2016 21:00"), repeat: "WEEKLY", repeatCount: 9}],
         // used for weeding out the current vs past events.  TODO figure out how to make this a trigger on update / insert, most likely in code, yuck
         scheduleStartDate: new Date("January 7, 2016 15:00"),
@@ -252,13 +252,6 @@ var shoots = [
         created: now,
         modified: now
     }
-];
-
-var announcements = [
-    { title : "This is our new website",
-        text : "Welcome.  If you want to get back to the old web site, click on <a href=\"http://www.kenoshabowmen.com/\" target=\"_blank\">Old Kenoshabowmen Website</a>.  Hopefully this new one will be completed soon.",
-        start : new Date("January 1, 2016 01:00"),
-        end : new Date("March 3, 2016 23:00")}
 
 ];
 
@@ -286,24 +279,4 @@ var allDone = function(err) {
 }
 
 async.each(shoots, insertItem, allDone);
-
-/*
-collection.remove();
-for (var shoot in shoots) {
-    console.log(JSON.stringify(shoots[shoot]));
-    collection.insert(shoots[shoot]);
-}
-
-
-collection = db.collection('announcements');
-collection.remove();
-for (var item in announcements) {
-    console.log(JSON.stringify(announcements[item]));
-    collection.insert(announcements[item]);
-}
-*/
-
-//db.close();
-
-
 

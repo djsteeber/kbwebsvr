@@ -26,6 +26,10 @@ var location = {
     ,phone: {isArrayOf: phoneType}
 };
 
+var pricing = {
+
+};
+
 var event = {
     name: reqString
     ,description: reqString
