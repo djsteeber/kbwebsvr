@@ -6,6 +6,8 @@ var async = require('async');
 // spreadsheet key is the long id in the sheets URL
 var spreadsheet = new GoogleSpreadsheet(kwsEnv.googleMembersSheet);
 var spreadsheetFilter = 'lastname != ""';
+//console.log('****************TEST, remove setting last name to Honold');
+//spreadsheetFilter = 'lastname = "Honold"';
 
 var account_creds = require('./google-generated-creds.json');
 // note: client email in the account credentials need to be given access to the sheet
@@ -69,55 +71,98 @@ var updateUser = function(oid, user, callback) {
     });
 };
 
-var processRow = function(row, callback) {
-    var name = {
+
+var processRecord = function(user, callback) {
+    userCollection.findOne({login: user.login.toLowerCase()}, function(err, foundUser) {
+        if (err) {
+            console.log(err);
+            return callback();
+        }
+        if (foundUser) {
+            // found, we need to do an update.
+            var mergedUser = Object.assign({}, foundUser, user);
+            var oid = foundUser._id;
+            delete mergedUser._id;
+            updateUser(oid, mergedUser, callback);
+        } else {
+            console.log("user not found, insert");
+            console.log(user.email);
+
+            addNewUser(user, callback);
+        }
+    });
+};
+
+var createLoginRecords = function(row) {
+    var loginRecords = [];
+
+
+    var memberName = {
         firstName: row.firstname,
         lastName: row.lastname,
         fullName: row.firstname + ' ' + row.lastname
     };
+    var spouseName = null;
+    if (row.spousefirstname) {
+        spouseName = {
+            firstName: row.spousefirstname,
+            lastName: (row.spouselastname) ? row.spouselastname : row.lastname
+        };
+        spouseName.fullName = spouseName.firstName + ' ' + spouseName.lastName;
+    }
 
-    var roles = (row.roles) ? row.roles.split(',') : [];
-    if (roles.length == 0) {
+    if (row.email) {
+        var memberEmail = row.email.trim().toLowerCase();
+        var roles = (row.roles) ? row.roles.split(',') : [];
         roles.push('MEMBER');
-    }
-    var user = {
-        login: row.email.toLowerCase(),
-        name: name,
-        email: row.email.toLowerCase(),
-        roles: roles,
-        spouse : row.spouse,
-        phone: row.phone,
-        address: {address: row.address, city: row.city, state: row.state, zip: row.zip},
-        hours: (row.hours) ? parseFloat(row.hours).toFixed(2) : 0,
-        exempt: (row.exempt && (row.exempt == 'Lifetime')) ? true : false
-        //joindate
-        //sponsor
-        //note
-    };
-
-    // so we want to find the user, and if found, update date it, if not add it
-    if (user.login) {
-        userCollection.findOne({login: user.login.toLowerCase()}, function(err, foundUser) {
-            if (err) {
-                console.log(err);
-                return callback();
-            }
-            if (foundUser) {
-                // found, we need to do an update.
-                var mergedUser = Object.assign({}, foundUser, user);
-                var oid = foundUser._id;
-                delete mergedUser._id;
-                updateUser(oid, mergedUser, callback);
-            } else {
-                console.log("user not found, insert");
-                console.log(row.email);
-
-                addNewUser(user, callback);
-            }
+        roles = roles.map(function(role) {
+            return role.trim().toUpperCase();
         });
+
+        var user = {
+            login: memberEmail,
+            name: memberName,
+            email: memberEmail,
+            roles: roles,
+            spouse: spouseName,
+            phone: row.phone,
+            address: {address: row.address, city: row.city, state: row.state, zip: row.zip},
+            hours: (row.hours) ? parseFloat(row.hours).toFixed(2) : 0,
+            exempt: (row.exempt && (row.exempt == 'Lifetime')) ? true : false
+        };
+        loginRecords.push(user);
+    }
+    if (row.spouseemail) {
+        var spouseEmail = row.spouseemail.trim().toLowerCase();
+        var spouseRoles = (row.spouseroles) ? row.spouseroles.split(',') : [];
+        spouseRoles.push('MEMBER');
+        spouseRoles = spouseRoles.map(function(role) {
+            return role.trim().toUpperCase();
+        });
+
+        var spouse = {
+            login: spouseEmail,
+            name: spouseName,
+            email: spouseEmail,
+            roles: spouseRoles,
+            spouse : memberName,
+            phone: (row.spousephone) ? row.spousephone : row.phone,
+            address: {address: row.address, city: row.city, state: row.state, zip: row.zip},
+            hours: (row.hours) ? parseFloat(row.hours).toFixed(2) : 0,
+            exempt: (row.exempt && (row.exempt == 'Lifetime')) ? true : false
+        };
+        loginRecords.push(spouse);
     }
 
+    return loginRecords;
 };
+
+var processRow = function(row, callback) {
+    // var create data
+    var loginRecords = createLoginRecords(row);
+
+    async.forEach(loginRecords, processRecord, callback);
+}
 
 var processRows = function(err, row_data) {
     if (err) {

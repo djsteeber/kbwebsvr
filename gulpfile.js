@@ -100,7 +100,8 @@ gulp.task('deploy', function(callback) {
             'tar -xzf ../stage/kbwebsvr.tar.gz',
             'cp ../stage/kbwebsvr-env.js .',
             'npm install --only=production',
-            'sleep 3;pm2 restart kbwebsvr'],
+            'sleep 3;pm2 restart kbwebsvr',
+            'sleep 3;pm2 restart resetPasswordJob'],
         {filePath: 'deploy.log'})
         .pipe(gulp.dest('./stage'));
 
