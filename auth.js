@@ -103,8 +103,9 @@ function Auth(config) {
     var verifyUser = function(username, password, done) {
         var collection = self.config.db.collection('users');
 
+        var login = (username) ? username.trim().toLowerCase() : username;
 
-        collection.findOne({"login": username.toLowerCase()}, function(err, user) {
+        collection.findOne({"login": login}, function(err, user) {
             if (err) {
                 return done(null, false, { error: 'Incorrect username or password.' });
             }
@@ -258,6 +259,8 @@ function Auth(config) {
 
             try {
                 var collection = self.config.db.collection('users');
+                //make sure to lower case and trim input of email
+                email = (email) ? email.trim().toLowerCase() : email;
                 collection.findOne({"email": email}, function (err, user) {
                     if (err) {
                         res.writeHead(401, JSON_CONTENT);

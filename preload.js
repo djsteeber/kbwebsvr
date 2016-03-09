@@ -15,32 +15,27 @@ phash(password).hash(function(error, hash) {
     }
 
     var userData = {
-        login: "dsteeber", name: {firstName: "Dale", lastName: "Steeber", fullName: "Dale Steeber"}
-        , email: "djsteeber@yahoo.com", password: hash, roles: "ADMIN"
+        login : "djsteeber@yahoo.com",
+        name : { firstName : "Dale", lastName : "Steeber", fullName : "Dale Steeber" },
+        email : "djsteeber@yahoo.com",
+        roles : [ "ADMIN" ],
+        spouse : "Jennifer",
+        phone : "(847) 548-2716",
+        address : { address : "1621 Fairport Dr", city : "Grayslake", state : "IL", zip : "60030" },
+        hours : 100,
+        exempt : false,
+        password: hash
     };
 
 
+
+
+
     //create the collections based on the schemas
-    users.insert(userData);
-
-    phash("1401").hash(function(error, hash) {
-        if (error) {
-            throw new Error('Something went wrong!');
-            console.log("ahh");
-        }
-
-        var userData = {
-            login: "kenoshabowmen", name: {firstName: "Member", lastName: "KB", fullName: "Member at KB"}
-            , email: "no-reply@noemail.com", password: hash, roles: "MEMBER"
-        };
-
-
-        users.insert(userData);
-
-
-        console.log('done');
+    users.insert(userData, function() {
         db.close();
     });
+
 
 
     console.log('done');

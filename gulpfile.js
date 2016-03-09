@@ -42,7 +42,8 @@ gulp.task('copy-dist', [], function() {
         'google-generated-creds.json',
         'loadUsersFromGoogleSheet.js',
         'load-announcements.js',
-        'forgotpwdjob.js'
+        'resetPasswordJob.js',
+        'sendMessagesJob.js'
     ];
     return gulp.src(jsFiles)
         .pipe(gulp.dest('./dist'));
@@ -100,7 +101,10 @@ gulp.task('deploy', function(callback) {
             'tar -xzf ../stage/kbwebsvr.tar.gz',
             'cp ../stage/kbwebsvr-env.js .',
             'npm install --only=production',
-            'sleep 3;pm2 restart kbwebsvr'],
+            'sleep 3;pm2 restart kbwebsvr',
+            'sleep 3;pm2 restart resetPasswordJob',
+            'sleep 3;pm2 restart sendMessagesJob',
+    ],
         {filePath: 'deploy.log'})
         .pipe(gulp.dest('./stage'));
 
