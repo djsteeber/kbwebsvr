@@ -43,7 +43,7 @@ gulp.task('copy-dist', [], function() {
         'loadUsersFromGoogleSheet.js',
         'load-announcements.js',
         'resetPasswordJob.js',
-        'sendMessageJob.js'
+        'sendMessagesJob.js'
     ];
     return gulp.src(jsFiles)
         .pipe(gulp.dest('./dist'));
@@ -103,7 +103,7 @@ gulp.task('deploy', function(callback) {
             'npm install --only=production',
             'sleep 3;pm2 restart kbwebsvr',
             'sleep 3;pm2 restart resetPasswordJob',
-            'sleep 3;pm2 restart sendMessageJob',
+            'sleep 3;pm2 restart sendMessagesJob',
     ],
         {filePath: 'deploy.log'})
         .pipe(gulp.dest('./stage'));
