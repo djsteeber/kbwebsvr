@@ -41,6 +41,7 @@ gulp.task('copy-dist', [], function() {
         'package.json',
         'google-generated-creds.json',
         'loadUsersFromGoogleSheet.js',
+        'loadEventsFromGoogleSheet.js',
         'load-announcements.js',
         'resetPasswordJob.js',
         'sendMessagesJob.js'

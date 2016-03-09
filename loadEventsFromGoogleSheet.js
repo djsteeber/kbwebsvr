@@ -5,7 +5,10 @@ var async = require('async');
 var moment = require('moment');
 
 // spreadsheet key is the long id in the sheets URL
-var spreadsheet = new GoogleSpreadsheet(kwsEnv.googleEventsSheet);
+
+//googleEventsSheet:  {sheetID: '1vQ1gs2PFGfjRx-Mngz7QGcRuqJszGUu6PmGkAuVFl3M', tabName: 'Events'},
+
+var spreadsheet = new GoogleSpreadsheet(kwsEnv.googleEventsSheet.sheetID);
 var spreadsheetFilter = 'name != ""';
 
 var account_creds = require('./google-generated-creds.json');
@@ -19,16 +22,9 @@ var allDone = function() {
 };
 
 var createDate = function(dt, time) {
-//    rec.start = row.startdate; // format is m/d/yyyy
-    //row.starttime  h:mm
-    //row.enddate, row.endtime
+    var m = moment(dt + ' ' + time, 'M/D/YYYY h:mm A');
 
-    var m = moment(dt + ' ' + time, 'M/D/YYYY H:mm');
-
-
-
-
-    return new Date("March 27, 2016 15:00");
+    return m.toDate();
 };
 
 var createRecord = function(row) {
@@ -109,8 +105,23 @@ var authCallBack = function(err) {
     if (err) {
         console.log(err);
     } else {
-        console.log("running spreadsheet query by " + spreadsheetFilter);
-        spreadsheet.getRows( 1, {query: spreadsheetFilter}, processRows);
+
+        spreadsheet.getInfo(function(err, info) {
+            if (err) {
+                console.log('error getting sheet info');
+                return;
+            }
+            for (var wsInx in info.worksheets) {
+                if (info.worksheets[wsInx].title == kwsEnv.googleEventsSheet.tabName) {
+                    console.log("running spreadsheet query by " + spreadsheetFilter);
+                    info.worksheets[wsInx].getRows({query: spreadsheetFilter}, processRows);
+                    return;
+                }
+            }
+            // this is only called if no worksheets are present
+            console.log('no work sheet found named ' + kwsEnv.googleEventsSheet.tabName);
+            allDone();
+        });
         // query should be {query: 'email = ""'}
     }
 };
