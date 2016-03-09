@@ -35,17 +35,20 @@ var event = {
     ,description: reqString
     ,eventType: {isRequired:true, isString:true, isOneOf: [['SHOOT', 'MEETING', 'LEAGUE', 'WORKPARTY']]}
     ,schedule: {isArrayOf: [schedule, 1]}
-    ,scheduleStartDate: reqDate
+    ,scheduleStartDate: reqDate // used for easy of querying current events
     ,scheduleEndDate: reqDate
 };
 
 /* shoot extends from event */
+//TODO move all events, shoot, etc to event collection
 var shoot = Object.assign(event, {
      flyer: {isRequired: false, isFile: true} // change to points to document
     ,results: {isFile:true}  // change to points to document
 });
 
+/* @deprecated */
 var meeting = event;
+/* @deprecated */
 var workParty = event;
 
 
@@ -101,7 +104,7 @@ var announcement = {
 
 
 var schemaMap = {location:location, event: event, user: user, userProfile : userProfile, message: message, document: document
-    , shoot: shoot, announcement: announcement, workParty: workParty, meeting: meeting};
+    , shoot: shoot, announcement: announcement, workParty: workParty, meeting: meeting, event: event};
 module.exports = schemaMap;
 
 
