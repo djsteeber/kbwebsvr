@@ -15,8 +15,9 @@ var userCollection = mongodb_inst.collection('users');
 var transporter = nodemailer.createTransport(ses({
     accessKeyId: kwsEnv.aws_ses_key,
     secretAccessKey: kwsEnv.aws_ses_secret,
-    region: 'us-west-2',
-    rateLimit: 14
+    region: (kwsEnv.aws_region || 'us-west-2'),  //TODO put these in the config file
+    pool: true,
+    rateLimit: (kwsEnv.mail_rate_limit || 10)
 }));
 
 
@@ -40,15 +41,21 @@ var sendEmail = function(user, message, callback) {
 
     var msg = {
         from: 'kenoshabowmen@gmail.com',
-            to: user.email,
+        //TODO all objects should have a creator and updater id, so we could pull the creator id
+        //TODO maybe in the schema, add a field to inject userEmail into record as replyTo
+        //replyTo: message.replyTo
+        to: user.email,
         subject: message.subject,
         text: text,
         html: html
     };
 
-    //TODO add in no send option
-//    console.log('sending ... ' + JSON.stringify(msg));
-//    callback();
+    if (kwsEnv.do_not_send_email) {
+        //TODO add in no send option
+        console.log('skip sending ... ' + JSON.stringify(msg));
+        callback();
+        return;
+    }
 
     transporter.sendMail(
         msg,
@@ -59,7 +66,7 @@ var sendEmail = function(user, message, callback) {
                 console.log(JSON.stringify(info));
                 callback();
             } else {
-                console.log("email looks like it worked, time to remove the record");
+                console.log("email sent to " + user.email);
                 callback();
             }
         }
@@ -68,13 +75,12 @@ var sendEmail = function(user, message, callback) {
 };
 
 var processRequest = function(message, prCallback) {
-    var oid = mongojs.ObjectId(message.userID);
     //based on msg.to we select the query to run
     // for all members the query is {}
     // for board members, we need to put an attribute on users that says board member
     // probably better to have a role
 
-    query = {email: {"$ne": ""}};
+    var query = {email: {"$ne": ""}};
     /*
     query = {login: 'djsteeber@yahoo.com'};
     if (message.to == 'ALL MEMBERS') {
@@ -90,7 +96,9 @@ var processRequest = function(message, prCallback) {
                 function(user, callback) {
                     sendEmail(user, message, callback);
                 },
-                prCallback);
+                function() {
+                    removeRequest(message._id, prCallback);
+                });
         }
     });
 };
@@ -102,17 +110,20 @@ var allDone = function(err) {
 
 var processAll = function() {
 
+    console.log("checking for messages to send");
     msgCollection.find(function(err, requests) {
-        async.forEach(requests, processRequest, allDone);
-
-        console.log(JSON.stringify(requests));
+        if (err) {
+            console.log('error' + err)
+        } else {
+            async.forEach(requests, processRequest, allDone);
+        }
     });
 
 
 };
 
-//setInterval(processAll, 1000 * 60);
+//specified in minutes, defaults to 5 minutes
+var runInterval = (kwsEnv.send_message_interval || 5) * 60 * 1000;
 
-processAll();
-
-
+console.log('Starting sendMessageJob, with an check interval of ' + runInterval + 'ms. ');
+setInterval(processAll, runInterval);

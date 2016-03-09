@@ -126,7 +126,7 @@ var processAll = function() {
 };
 
 //specified in minutes, defaults to 5 minutes
-var runInterval = (kws.reset_password_interval || 5) * 60 * 1000;
+var runInterval = (kwsEnv.reset_password_interval || 5) * 60 * 1000;
 
 console.log('Starting resetPasswordJob, with an check interval of ' + runInterval + 'ms. ');
 setInterval(processAll, runInterval);

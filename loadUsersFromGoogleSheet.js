@@ -10,7 +10,7 @@ var spreadsheetFilter = 'lastname != ""';
 //spreadsheetFilter = 'lastname = "Honold"';
 
 var account_creds = require('./google-generated-creds.json');
-// note: client email in the account credentials need to be given access to the sheet
+loadUsersFromGoogleSheet.js// note: client email in the account credentials need to be given access to the sheet
 
 
 var mongodb_inst = mongojs(kwsEnv.mongodb_uri, []);
