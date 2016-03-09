@@ -110,7 +110,7 @@ var allDone = function(err) {
 
 var processAll = function() {
 
-    console.log("checking for messages to send");
+    //console.log("checking for messages to send");
     msgCollection.find(function(err, requests) {
         if (err) {
             console.log('error' + err)
