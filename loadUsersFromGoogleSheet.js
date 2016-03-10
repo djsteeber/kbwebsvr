@@ -4,7 +4,7 @@ var GoogleSpreadsheet = require("google-spreadsheet");
 var async = require('async');
 
 // spreadsheet key is the long id in the sheets URL
-var spreadsheet = new GoogleSpreadsheet(kwsEnv.googleMembersSheet);
+var spreadsheet = new GoogleSpreadsheet(kwsEnv.googleMembersSheet.sheetID);
 var spreadsheetFilter = 'lastname != ""';
 //console.log('****************TEST, remove setting last name to Honold');
 //spreadsheetFilter = 'lastname = "Honold"';
@@ -72,6 +72,7 @@ var updateUser = function(oid, user, callback) {
 
 
 var processRecord = function(user, callback) {
+
     userCollection.findOne({login: user.login.toLowerCase()}, function(err, foundUser) {
         if (err) {
             console.log(err);
@@ -176,8 +177,22 @@ var authCallBack = function(err) {
     if (err) {
         console.log(err);
     } else {
-        console.log("running spreadsheet query by " + spreadsheetFilter);
-        spreadsheet.getRows( 1, {query: spreadsheetFilter}, processRows);
+        spreadsheet.getInfo(function(err, info) {
+            if (err) {
+                console.log('error getting sheet info');
+                return;
+            }
+            for (var wsInx in info.worksheets) {
+                if (info.worksheets[wsInx].title == kwsEnv.googleMembersSheet.tabName) {
+                    console.log("running spreadsheet query by " + spreadsheetFilter);
+                    info.worksheets[wsInx].getRows({query: spreadsheetFilter}, processRows);
+                    return;
+                }
+            }
+            // this is only called if no worksheets are present
+            console.log('no work sheet found named ' + kwsEnv.googleMembersSheet.tabName);
+            allDone();
+        });
         // query should be {query: 'email = ""'}
     }
 };
