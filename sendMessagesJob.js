@@ -6,10 +6,24 @@ var nodemailer = require('nodemailer');
 var ses = require('nodemailer-ses-transport');
 var htmlToText = require('html-to-text');
 
+var winston = require('winston');
+winston.emitErrs = true;
 
-var mongodb_inst = mongojs(kwsEnv.mongodb_uri, []);
-var msgCollection = mongodb_inst.collection('messages');
-var userCollection = mongodb_inst.collection('users');
+var logger = new winston.Logger({
+    transports: [
+        new winston.transports.Console({
+            level: 'debug',
+            timestamp: true,
+            handleExceptions: true,
+            json: false,
+            colorize: true
+        })
+    ],
+    exitOnError: false
+});
+
+
+var mongodb_inst = mongojs(kwsEnv.mongodb_uri, [],{connectionTimeout: 3000} );
 
 // setup a timer to run the function
 var transporter = nodemailer.createTransport(ses({
@@ -22,11 +36,12 @@ var transporter = nodemailer.createTransport(ses({
 
 
 var removeRequest = function(requestID, callback) {
+    var msgCollection = mongodb_inst.collection('messages');
     msgCollection.remove({_id: requestID}, function(err) {
         if (err) {
-            console.log('message not removed');
+            logger.info('message not removed');
         } else {
-            console.log('message removed ' + requestID);
+            logger.info('message removed ' + requestID);
         }
         callback();
     });
@@ -52,7 +67,7 @@ var sendEmail = function(user, message, callback) {
 
     if (kwsEnv.do_not_send_email) {
         //TODO add in no send option
-        console.log('skip sending ... ' + JSON.stringify(msg));
+        logger.info('skip sending ... ' + JSON.stringify(msg));
         callback();
         return;
     }
@@ -61,12 +76,12 @@ var sendEmail = function(user, message, callback) {
         msg,
         function (err, info) {
             if (err) {
-                console.log("error sending the email");
-                console.log(err.message);
-                console.log(JSON.stringify(info));
+                logger.warn("error sending the email");
+                logger.warn(err.message);
+                logger.warn(JSON.stringify(info));
                 callback();
             } else {
-                console.log("email sent to " + user.email);
+                logger.info("email sent to " + user.email);
                 callback();
             }
         }
@@ -87,6 +102,7 @@ var processRequest = function(message, prCallback) {
         query = {login: 'djsteeber@yahoo.com'};
     }
 */
+    var userCollection = mongodb_inst.collection('users');
     userCollection.find(query, function (err, users) {
         if (err || (! users)) {
             prCallback();
@@ -104,26 +120,39 @@ var processRequest = function(message, prCallback) {
 };
 
 var allDone = function(err) {
-    mongodb_inst.close();
+    //found issue.  Don't close
+    //mongodb_inst.close();
     return;
 };
-
+//TODO write as a closure so that the db connection can be passed, established and closed in the process.
+//TODO for now it is just a global variable, that if errors hoses us
 var processAll = function() {
 
-    //console.log("checking for messages to send");
-    msgCollection.find(function(err, requests) {
-        if (err) {
-            console.log('error' + err)
-        } else {
-            async.forEach(requests, processRequest, allDone);
-        }
-    });
-
+    logger.info("checking for messages to send");
+    try {
+        var msgCollection = mongodb_inst.collection('messages');
+        msgCollection.find(function (err, requests) {
+            if (err) {
+                logger.warn('error' + err)
+            } else {
+                async.forEach(requests, processRequest, allDone);
+            }
+        });
+    } catch (err) {
+        logger.warn('exception caught in process all');
+        logger.err(err);
+    }
 
 };
 
 //specified in minutes, defaults to 5 minutes
 var runInterval = (kwsEnv.send_message_interval || 5) * 60 * 1000;
 
-console.log('Starting sendMessageJob, with an check interval of ' + runInterval + 'ms. ');
+
+// does not work, not sure why.  Leave in for now.  Just do not close connection
+mongodb_inst.on('error', function(err) {
+    logger.err(err);
+});
+
+logger.info('Starting sendMessageJob, with an check interval of ' + runInterval + 'ms. ');
 setInterval(processAll, runInterval);
