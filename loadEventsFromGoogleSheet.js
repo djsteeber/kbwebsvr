@@ -32,20 +32,23 @@ var createRecord = function(row) {
     var endDate = createDate(row.enddate, row.endtime);
 
     var rec = {
-        name:           row.name,
-        description:    row.description,
-        schedule: [{start: startDate, end: endDate}],
+        name:               row.name,
+        description:        row.description,
+        eventType:          row.type.toUpperCase(),
+        schedule:           [ {start: startDate, end: endDate} ],
         scheduleStartDate:  startDate,
         scheduleEndDate:    endDate
     };
-
 
     return rec;
 };
 
 
-var upsertRecord = function(id, record, collectionName, callback) {
-    var collection = mongodb_inst.collection(collectionName);
+var upsertRecord = function(row, callback) {
+    var record = createRecord(row);
+    var id = row.uid;
+
+    var collection = mongodb_inst.collection(COLLECTION_NAME);
 
     if (id) {
         var oid = mongojs.ObjectId(id);
@@ -76,7 +79,9 @@ var upsertRecord = function(id, record, collectionName, callback) {
             //TODO this is where you pass an extra callback and shim in the update to the spreadsheet with UID / _id
             console.log('insert record complete ' + JSON.stringify(record));
             console.warn('add in function to update spreadsheet here with ' + item._id);
-            callback();
+            row.uid = item._id;
+            row.save(callback);
+            //callback();
         });
     }
 };
@@ -88,8 +93,7 @@ var processRow = function(row, callback) {
     console.log('processing row data ' + JSON.stringify(row));
     // could add the function here to write back  upsertRecord just needs to send back some params
     // in the callback
-    rec.eventType = 'WORKPARTY';
-    upsertRecord(row.uid, rec, COLLECTION_NAME, callback );
+    upsertRecord(row, callback );
 };
 
 var processRows = function(err, row_data) {
