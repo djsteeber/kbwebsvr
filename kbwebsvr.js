@@ -23,7 +23,7 @@ var Auth = require('./auth');
 var SecureDoc = require('./secure-doc');
 var pluralize = require('pluralize');
 var RestifyICal = require('./restify-ical');
-
+var logger = require('./kbwebsvr-logger');
 
 var mongodb_inst = mongojs(kwsEnv.mongodb_uri, []);
 var auth = new Auth({db: mongodb_inst, session_timeout: kwsEnv.session_timeout});
@@ -74,6 +74,6 @@ restifyICal.createEndPoints(server);
 
 
 server.listen(3000, function() {
-   console.log('%s listening at %s', server.name, server.url);
+   logger.info('%s listening at %s', server.name, server.url);
 });
 

@@ -9,6 +9,8 @@ var ses = require('nodemailer-ses-transport');
 var kwsEnv = require('./kbwebsvr-env');
 var stcompile = require('string-template/compile');
 
+var logger = require('./kbwebsvr-logger');
+
 
 var emailTemplate = {
     html: stcompile(fs.readFileSync('./config/password-email-template.html', 'utf-8')),
@@ -26,15 +28,15 @@ var requestCollection = mongodb_inst.collection('passwordReset');
 var transporter = nodemailer.createTransport(ses({
     accessKeyId: kwsEnv.aws_ses_key,
     secretAccessKey: kwsEnv.aws_ses_secret,
-    region: 'us-west-2',
-    rateLimit: 14
+    region: kwsEnv.aws_ses_region | 'us-west-2',
+    rateLimit: kwsEnv.aws_ses_rate_limit | 10
 }));
 
 
 
 var generateRandomPassword = function() {
     var password = generator.generate({
-        length: 10,
+        length: kwsEnv.gen_password_length | 10,
         numbers: true,
         symbols: false,
         uppercase: true,
@@ -47,9 +49,10 @@ var generateRandomPassword = function() {
 var removeRequest = function(requestID, callback) {
     requestCollection.remove({_id: requestID}, function(err) {
         if (err) {
-            console.log('password reset request not removed');
+            logger.info('password reset request not removed');
+            logger.error(err);
         } else {
-            console.log('password reset request removed ' + requestID);
+            logger.info('password reset request removed ' + requestID);
         }
         callback();
     });
@@ -71,12 +74,11 @@ var sendEmail = function(requestID, user, password, callback) {
         html: emailTemplate.html(data)
     }, function (err, info) {
         if (err) {
-            console.log("error sending the email");
-            console.log(err.message);
-            console.log(JSON.stringify(info));
+            logger.info("error sending the email");
+            logger.error(err);
             callback();
         } else {
-            console.log("email looks like it worked, time to remove the record");
+            logger.info("email looks like it worked, time to remove the record", info);
             removeRequest(requestID, callback);
         }
     });
@@ -87,12 +89,17 @@ var resetUserPassword = function(requestID, user, callback) {
     phash(password).hash(function (err, hashedpassword){
         user.password = hashedpassword;
         userCollection.update({_id: user._id}, user, {multi: false}, function (err, data) {
-            console.log("updating user " + user.name.fullName + ' to ' + password );
+            logger.info("updating user ", user );
             if (err) {
-                console.log(err);
+                logger.info(err);
                 callback();
             } else {
-                sendEmail(requestID, user, password, callback);
+                if (kwsEnv.do_not_send_email) {
+                    logger.info('skipping email send', {email: user.email});
+                    callback();
+                } else {
+                    sendEmail(requestID, user, password, callback);
+                }
             }
         });
     });
@@ -110,16 +117,20 @@ var processRequest = function(request, callback) {
 };
 
 var allDone = function(err) {
-    mongodb_inst.close();
+    // don't close this here
+    //mongodb_inst.close();
     return;
 };
 
 var processAll = function() {
 
     requestCollection.find(function(err, requests) {
-        async.forEach(requests, processRequest, allDone);
-
-       console.log(JSON.stringify(requests));
+        if (err) {
+            logger.error(err);
+        } else {
+            logger.info('resetPassword requests found', {count: requests.length});
+            async.forEach(requests, processRequest, allDone);
+        }
     });
 
 
@@ -128,7 +139,7 @@ var processAll = function() {
 //specified in minutes, defaults to 5 minutes
 var runInterval = (kwsEnv.reset_password_interval || 5) * 60 * 1000;
 
-console.log('Starting resetPasswordJob, with an check interval of ' + runInterval + 'ms. ');
+logger.info('Starting resetPasswordJob, with an check interval of ' + runInterval + 'ms. ');
 setInterval(processAll, runInterval);
 
 

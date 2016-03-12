@@ -4,6 +4,22 @@ var GoogleSpreadsheet = require("google-spreadsheet");
 var async = require('async');
 var moment = require('moment');
 
+var winston = require('winston');
+winston.emitErrs = true;
+
+var logger = new winston.Logger({
+    transports: [
+        new winston.transports.Console({
+            level: 'debug',
+            timestamp: true,
+            handleExceptions: true,
+            json: false,
+            colorize: true
+        })
+    ],
+    exitOnError: false
+});
+
 // spreadsheet key is the long id in the sheets URL
 
 //googleEventsSheet:  {sheetID: '1vQ1gs2PFGfjRx-Mngz7QGcRuqJszGUu6PmGkAuVFl3M', tabName: 'Events'},
@@ -17,7 +33,7 @@ var mongodb_inst = mongojs(kwsEnv.mongodb_uri, []);
 var COLLECTION_NAME = 'events';
 
 var allDone = function() {
-    console.log('done');
+    logger.info('done');
     mongodb_inst.close();
 };
 
@@ -55,16 +71,16 @@ var upsertRecord = function(row, callback) {
 
         collection.findOne({'_id': oid}, function(err, item) {
             if (err) {
-                console.log('could not find record with id ' + id);
+                logger.info('could not find record with id ' + id);
                 callback();
                 return;
             }
             var newItem = Object.assign({}, item, record);
             collection.update({'_id': oid}, newItem, function(err, item) {
                 if (err) {
-                    console.log('error updating the record ' + JSON.stringify(record));
+                    logger.info('error updating the record ' + JSON.stringify(record));
                 } else {
-                    console.log('record updated ' + JSON.stringify(record));
+                    logger.info('record updated ' + JSON.stringify(record));
                 }
                 callback();
             });
@@ -72,12 +88,12 @@ var upsertRecord = function(row, callback) {
     } else {
         collection.insert(record, function (err, item) {
             if (err) {
-                console.log('unable to insert record ' + JSON.stringify(record));
+                logger.info('unable to insert record ' + JSON.stringify(record));
                 callback();
                 return;
             }
             //TODO this is where you pass an extra callback and shim in the update to the spreadsheet with UID / _id
-            console.log('insert record complete ' + JSON.stringify(record));
+            logger.info('insert record complete ' + JSON.stringify(record));
             console.warn('add in function to update spreadsheet here with ' + item._id);
             row.uid = item._id;
             row.save(callback);
@@ -90,7 +106,7 @@ var upsertRecord = function(row, callback) {
 var processRow = function(row, callback) {
     var rec = createRecord(row);
 
-    console.log('processing row data ' + JSON.stringify(row));
+    logger.info('processing row data ' + JSON.stringify(row));
     // could add the function here to write back  upsertRecord just needs to send back some params
     // in the callback
     upsertRecord(row, callback );
@@ -98,7 +114,7 @@ var processRow = function(row, callback) {
 
 var processRows = function(err, row_data) {
     if (err) {
-        console.log(err);
+        logger.info(err);
     } else {
         async.forEach(row_data,processRow, allDone);
     }
@@ -107,23 +123,23 @@ var processRows = function(err, row_data) {
 
 var authCallBack = function(err) {
     if (err) {
-        console.log(err);
+        logger.info(err);
     } else {
 
         spreadsheet.getInfo(function(err, info) {
             if (err) {
-                console.log('error getting sheet info');
+                logger.info('error getting sheet info');
                 return;
             }
             for (var wsInx in info.worksheets) {
                 if (info.worksheets[wsInx].title == kwsEnv.googleEventsSheet.tabName) {
-                    console.log("running spreadsheet query by " + spreadsheetFilter);
+                    logger.info("running spreadsheet query by " + spreadsheetFilter);
                     info.worksheets[wsInx].getRows({query: spreadsheetFilter}, processRows);
                     return;
                 }
             }
             // this is only called if no worksheets are present
-            console.log('no work sheet found named ' + kwsEnv.googleEventsSheet.tabName);
+            logger.info('no work sheet found named ' + kwsEnv.googleEventsSheet.tabName);
             allDone();
         });
         // query should be {query: 'email = ""'}

@@ -48,6 +48,17 @@ var logger = new winston.Logger({
     exitOnError: false
 });
 
+logger.rewriters.push(function(level, msg, meta) {
+    if (meta.password) {
+        meta.password = '*****';
+    }
+    if (meta._id) {
+        meta._id = meta._id.toString();
+    }
+
+    return meta;
+});
+
 module.exports = logger;
 module.exports.stream = {
     write: function(message, encoding){

@@ -9,7 +9,7 @@ var sessions = require('client-sessions');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var mongojs = require('mongojs');
-
+var logger = require('./kbwebsvr-logger');
 
 var JSON_CONTENT = {'Content-Type': 'application/json; charset=utf-8'};
 
@@ -267,17 +267,17 @@ function Auth(config) {
                         res.end(JSON.stringify({message: "request denied"}));
                         return;
                     }
-                    console.log("user found " + JSON.stringify(user.name));
+                    logger.info("user found " + JSON.stringify(user.name));
 
                     var prCollection = self.config.db.collection('passwordReset');
                     prCollection.insert({userID: user._id, name: user.name, login: user.login, email: user.email}, function (err) {
                         if (err) {
-                            console.log(err);
+                            logger.info(err);
                             res.writeHead(500, JSON_CONTENT);
                             res.end(JSON.stringify({message: "Issue writing reset request"}));
                             return;
                         }
-                        console.log("Record inserted into prCollection");
+                        logger.info("Record inserted into prCollection");
 
                         res.writeHead(200, JSON_CONTENT);
                         res.end(JSON.stringify({message: "request accepted"}));
@@ -286,7 +286,7 @@ function Auth(config) {
 
                 });
             } catch (exc) {
-                console.log(exc);
+                logger.info(exc);
                 res.writeHead(500, JSON_CONTENT);
                 res.end(JSON.stringify({message: "error"}));
             }
@@ -330,7 +330,7 @@ function Auth(config) {
                     user.password = hashedpassword;
                     var userCollection = self.config.db.collection('users');
                     userCollection.update({_id: user._id}, user, {multi: false}, function (err, data) {
-                        console.log("updating user " + user.name.fullName + ' to ' + newPassword );
+                        logger.info("updating user " + user.name.fullName + ' to ' + newPassword );
                         if (err) {
                             res.writeHead(500, JSON_CONTENT);
                             res.end(JSON.stringify({message: "Unable to update the new password."}));
