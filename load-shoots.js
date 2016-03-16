@@ -7,6 +7,7 @@ var phash = require('password-hash-and-salt');
 var now = Date.now();
 
 var shoots = [
+        /*
     { name: "Fran's Indoor Animal League",
         description: "10 week Indoor League.",
         shootType: "League",
@@ -251,7 +252,21 @@ var shoots = [
         scheduleEndDate: new Date("March 25, 2016 22:00"),
         created: now,
         modified: now
-    }
+    },
+    */
+    { name: "Spring Outdoor Field League",
+        description: "Outdoor league with NFAA and Hunter round targets.  10 week handicapped team competition.",
+        shootType: "Members Only League",
+        range: ["Range 1", "Range 2", "Range 3"],
+        schedule: [
+            { start: new Date("May 03, 2016 08:00"), end: new Date("May 03, 2016 21:00"), repeat: 'WEEKLY', repeatCount: 10 }
+        ],
+        flyer: { url: "/misc_docs/shoots/2016OutdoorFieldLeague.png", name: "2016OutdoorFieldLeague.png" },
+        scheduleStartDate: new Date("May 03, 2016 08:00"),
+        scheduleEndDate: new Date("July 05, 2016 20:00"),
+        created: now,
+        modified: now
+    },
 
 ];
 
@@ -263,7 +278,7 @@ var async = require('async');
 var db = mongojs('mongodb://localhost/archeryweb', []);
 
 var collection = db.collection('shoots');
-collection.remove();
+//collection.remove();
 
 
 var insertItem = function(item, callback) {

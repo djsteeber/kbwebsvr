@@ -157,14 +157,24 @@ function Auth(config) {
 
         return [
             sessions({
-            // cookie name dictates the key name added to the request object
-            // DONT CHANGE THIS OR IT BREAKS THE CODE
-            // Changing this and res.[cookieName], does set the cooking, but the read does not process accurately
-            cookieName: 'session',
-            // should be a large unguessable string
-            secret:  (config.session_secret) ? config.session_secret : 'adsflkjasojf',
-            // how long the session will stay valid in ms
-            duration: (config.session_timeout) ? config.session_timeout : 60 * 60 * 1000
+                // cookie name dictates the key name added to the request object
+                // DONT CHANGE THIS OR IT BREAKS THE CODE
+                // Changing this and res.[cookieName], does set the cooking, but the read does not process accurately
+                cookieName: 'session',
+                // should be a large unguessable string
+                secret:  (config.session_secret) ? config.session_secret : 'adsflkjasojf',
+                // how long the session will stay valid in ms
+                duration: (config.session_timeout) ? config.session_timeout : 60 * 60 * 1000,
+                cookie: {
+                    path: '/', // cookie will only be sent to requests under '/api'
+                    //maxAge: 60000, // duration of the cookie in milliseconds, defaults to duration above
+                    ephemeral: false, // when true, cookie expires when the browser closes
+                    httpOnly: true, // when true, cookie is not accessible from javascript
+                    secure: (config.session_secure_cookie) ? config.session_secure_cookie : false,
+                    //proxySecure: (config.session_secure_cookie) ? config.session_secure_cookie : false
+                    // when true, cookie will only be sent over SSL. use key 'secureProxy' instead if you handle SSL not in your node process
+                }
+
             }),
             passport.initialize(),
             passport.session(),

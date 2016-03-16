@@ -72,6 +72,21 @@ secureDoc.createEndPoints(server);
 var restifyICal = new RestifyICal({db: mongodb_inst});
 restifyICal.createEndPoints(server);
 
+/* put in its own module, maybe something called AppEndPoints */
+server.get('/rest/boardMembers', function(req, res, next) {
+    var JSON_CONTENT = {'Content-Type': 'application/json; charset=utf-8'};
+
+    //read the mongo db for the board members
+    var collection = mongodb_inst.collection('users');
+
+    collection.find({"roles": {"$elemMatch": "OFFICER"}}, function(err, docs) {
+        res.writeHead(200, JSON_CONTENT);
+        res.end(JSON.stringify(docs));
+
+    });
+
+
+});
 
 server.listen(3000, function() {
    logger.info('%s listening at %s', server.name, server.url);

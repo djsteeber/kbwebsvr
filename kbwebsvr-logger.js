@@ -59,6 +59,12 @@ logger.rewriters.push(function(level, msg, meta) {
     return meta;
 });
 
+if (! logger.warn) {
+    logger.warn = function(msg, meta) {
+        logger.log('warn', msg, meta);
+    }
+}
+
 module.exports = logger;
 module.exports.stream = {
     write: function(message, encoding){

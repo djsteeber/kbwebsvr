@@ -51,6 +51,13 @@ var addNewUser = function (user, callback) {
             logger.error(err);
             callback();
         } else {
+            if (row.email.trim().toLowerCase() == user.login) {
+                row.uid = oid;
+            } else if (row.spouseemail.trim().toLowerCase() == user.login) {
+                row.spouseuid = oid;
+            } else {
+                logger.warn("no match for email " + user.login);
+            }
             if (insertedUser) {
                 addResetPasswordRequest(insertedUser, callback);
             } else {
@@ -61,17 +68,52 @@ var addNewUser = function (user, callback) {
     });
 };
 
-var updateUser = function(oid, user, callback) {
+var updateUser = function(oid, user, row, callback) {
     userCollection.update({_id: oid}, user, {multi: false}, function(err) {
-        logger.info("updating user ", user);
         if (err) {
-            logger.info(err);
+            logger.error(err);
+            callback();
+        } else {
+            // here we want to update the row with the UID / oid, but which one, spouse or member
+            // check login vs email to see which one
+            //right now we are just setting the ids in the row, the save will be done after the row is processed
+            if (row.email.trim().toLowerCase() == user.login) {
+                row.uid = oid;
+            } else if (row.spouseemail.trim().toLowerCase() == user.login) {
+                row.spouseuid = oid;
+            } else {
+                logger.warn("no match for email ", {login: user.login});
+            }
+
+            callback();
+
         }
-        callback();
     });
 };
 
 
+var createProcessRecordFN = function (row) {
+  return function(user, callback) {
+      userCollection.findOne({login: user.login.toLowerCase()}, function(err, foundUser) {
+          if (err) {
+              logger.error(err);
+              return callback();
+          }
+          if (foundUser) {
+              // found, we need to do an update.
+              var mergedUser = Object.assign({}, foundUser, user);
+              var oid = foundUser._id;
+              delete mergedUser._id;
+              updateUser(oid, mergedUser, row, callback);
+          } else {
+              logger.info("user not found, insert", user);
+
+              addNewUser(user, row, callback);
+          }
+      });
+  };
+};
+/*
 var processRecord = function(user, callback) {
 
     userCollection.findOne({login: user.login.toLowerCase()}, function(err, foundUser) {
@@ -93,7 +135,7 @@ var processRecord = function(user, callback) {
         }
     });
 };
-
+*/
 var createLoginRecords = function(row) {
     var loginRecords = [];
 
@@ -162,12 +204,22 @@ var processRow = function(row, callback) {
     // var create data
     var loginRecords = createLoginRecords(row);
 
-    async.forEach(loginRecords, processRecord, callback);
+    var processRecord = createProcessRecordFN(row);
+
+    async.forEach(loginRecords, processRecord,
+        function() {
+            // save the row back
+            row.save(
+                function() {
+                    logger.info("saved spreadsheet for row", {email:  row.email, uid: row.uid, spouseUid: row.spouseuid});
+                    callback();
+                });
+        });
 }
 
 var processRows = function(err, row_data) {
     if (err) {
-        logger.info(err);
+        logger.error(err);
     } else {
         async.forEach(row_data,processRow, allDone);
     }
@@ -207,7 +259,6 @@ if (process.argv.length > 2) {
 
 spreadsheet.useServiceAccountAuth(account_creds, authCallBack);
 
-
-
+//TODO:  fix the async problem,  program is ending before the data is applied to the spreadsheet.
 
 
