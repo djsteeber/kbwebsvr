@@ -3,6 +3,7 @@ var sv = require('./json-schema-validator');
 var passwordhasher = require('password-hash-and-salt');
 var fs = require('fs');
 var sanitizefn = require("sanitize-filename");
+var logger = require('./kbwebsvr-logger');
 
 //change to bcyrpt
 
@@ -47,7 +48,7 @@ function getRequestData(req) {
                   }
                }
             } catch (err) {
-               console.log(err);
+               logger.info(err);
                obj = {};
             }
          }
@@ -143,7 +144,7 @@ var convertDates = function(obj) {
  * handler for get on the collection
  */
 var getItems = function (req, res, next) {
-console.log("gettting items\n");
+logger.info("gettting items\n");
    var collection = getCollection(req);
    var collectionName = getCollectionName(req);
    var reqData = getRequestData(req);
@@ -166,27 +167,27 @@ console.log("gettting items\n");
    //var query = getRequestData(req);
    // right now just use all of the request body as the query object
    // might want to add in field selection, but that is an add on as the front end can ignore
-   //console.log(req);
-   console.log("find in collection " + collectionName)
-   console.log("   query " + JSON.stringify(query));
-   console.log("   options " + JSON.stringify(options));
+   //logger.info(req);
+   logger.info("find in collection " + collectionName)
+   logger.info("   query " + JSON.stringify(query));
+   logger.info("   options " + JSON.stringify(options));
 try {
 //   collection.find(query, null, options, function (err, items) {
    collection.find(query, null, options, function (err, items) {
       if (err) {
-         console.log(err);
+         logger.info(err);
       }
-//console.log();
+//logger.info();
       //add in location
       var data = addLocationTo(items, req);
 
       res.writeHead(200, JSON_CONTENT);
       res.end(JSON.stringify(data));
-      console.log("items sent: gettting items\n");
+      logger.info("items sent: gettting items\n");
       return next();
    });
 } catch (findexc) {
-   console.log(findexc);
+   logger.info(findexc);
 }
 };
 
@@ -204,7 +205,7 @@ var getItem = function (req, res, next) {
          res.end(JSON.stringify(events));
       });
    } catch (exc) {
-      console.log(exc);
+      logger.info(exc);
       res.writeHead(404, JSON_CONTENT); // not found
       res.end(JSON.stringify({message: 'Unable to find Object in ' + collection}));
    }
@@ -270,7 +271,7 @@ var fetchAndMerge = function (req, res, next) {
  */
 var delItem = function (req, res, next) {
    var collection = getCollection(req);
-   console.log(req.params);
+   logger.info(req.params);
    try {
       var oid = mongojs.ObjectId(req.params.id);
       collection.remove({"_id": oid}, function (err, data) {
@@ -288,19 +289,19 @@ var delItem = function (req, res, next) {
 function copyFileSync(source, target) {
    try {
       var data = fs.readFileSync(source);
-      console.log(' data size read = ' + data.length);
+      logger.info(' data size read = ' + data.length);
       fs.writeFileSync(target, data);
    } catch(fswriteerr) {
-      console.log('error writing file' + fswriteerr);
+      logger.info('error writing file' + fswriteerr);
    }
-   console.log("done with copy of file" + source + ' to ' + target);
+   logger.info("done with copy of file" + source + ' to ' + target);
 };
 
 function convertAndStoreFiles(item, collectionName) {
    var fileConfig = config.file[collectionName];
 
    for (var field in item) {
-      console.log(field);
+      logger.info(field);
       if ((item[field].name != undefined) && (item[field].path != undefined)) {
          var fileName = sanitizefn(item[field].name);
          fileName = fileName.replace(/ /g,"_");
@@ -316,12 +317,12 @@ function convertAndStoreFiles(item, collectionName) {
 
             //fs.writecopySync(item[field].path, fileConfig.dir + '/' + fileName, {clobber: true});
          } catch (err) {
-            console.log('error copying file');
+            logger.info('error copying file');
          }
 
          item[field] = {url: fileConfig.urlRoot + '/' + fileName, name: fileName, type: item[field].type};
          //copy the file to the new directory
-         console.log('new file will be ' + item[field].name)
+         logger.info('new file will be ' + item[field].name)
       }
    }
    return item;
@@ -332,11 +333,11 @@ function convertAndStoreFiles(item, collectionName) {
  * handler to add a new item to the collection
  */
 var newItem = function (req, res, next) {
-console.log('adding new item');
+logger.info('adding new item');
    var collectionName = getCollectionName(req);
    var collection = getCollection(req);
    var item = getRequestData(req);
-   console.log('adding to collection');
+   logger.info('adding to collection');
 
    //need to put in the chain of callbacks
    // here we want to move the file, and the call
@@ -347,7 +348,7 @@ console.log('adding new item');
    item.created = now;
    item.updated = now;
    collection.save(item, function (err, data) {
-      console.log("done with save of item");
+      logger.info("done with save of item");
       if (err) {
          res.writeHead(400, JSON_CONTENT);
          res.end(JSON.stringify(err));
@@ -368,7 +369,7 @@ console.log('adding new item');
  */
 var convertBody = function(schema) {
    return function(req, res, next) {
-      console.log("conversion of password, date and file types");
+      logger.info("conversion of password, date and file types");
       var obj = getRequestData();
 
       req.data = jsc.convert(req.data, schema);
@@ -384,17 +385,17 @@ var convertBody = function(schema) {
 var validateBody = function (schema) {
 
   return function(req, res, next) {
-     console.log('validating body');
+     logger.info('validating body');
     var obj = getRequestData(req);
     var v = new sv();
     var valid = v.validateInput(obj, schema);
     if (! valid) {
-       console.log("error");
+       logger.info("error");
        res.writeHead(400, JSON_CONTENT);
        res.end(JSON.stringify(v.getFieldErrors()));
        return;
     }
-     console.log('validating body complete');
+     logger.info('validating body complete');
 
     return next();
   };
@@ -450,27 +451,27 @@ exports.createEndPoint = function(server, epTypes, config) {
    for (var epInx in epTypeArray) {
       var epType = epTypeArray[epInx]; 
       if (epType == 'C') {
-         console.log('adding create endpoint ' + epName);
+         logger.info('adding create endpoint ' + epName);
          if (typeof config.schema === "undefined") {
             server.post(epName, newItem);
          } else {
             server.post(epName, vc, hpwd, newItem);
          }
       } else if (epType == 'R') {
-         console.log('adding read endpoint ' + epName);
-         console.log('adding read endpoint ' + epName + "/:id");
+         logger.info('adding read endpoint ' + epName);
+         logger.info('adding read endpoint ' + epName + "/:id");
          server.get(epName, getItems);
          server.get(epName + "/:id", getItem);
       } else if (epType == 'U') {
-         console.log('adding update endpoint ' + epName + "/:id");
+         logger.info('adding update endpoint ' + epName + "/:id");
          server.put(epName + "/:id", fetchAndMerge, vc, updateItem);
       } else if (epType == 'D') {
-         console.log('adding delete endpoint ' + epName + "/:id");
+         logger.info('adding delete endpoint ' + epName + "/:id");
          server.del(epName + "/:id", delItem);
       }
    }
    // adding in a schema endpoint
-   console.log('adding read endpoint ' + epName + '.schema');
+   logger.info('adding read endpoint ' + epName + '.schema');
    server.get(epName + '.schema', displaySchema(config.schema));
 };
 
@@ -480,7 +481,7 @@ exports.catchAllErrors = function(req, res, next) {
    try {
       rtn = next();
    } catch (exc) {
-      console.log(exc);
+      logger.info(exc);
 
       res.writeHead(401, JSON_CONTENT);
       res.end(JSON.stringify(exc));
@@ -498,13 +499,13 @@ exports.parseDates = function(req, resp, next) {
       try {
          for (var key in obj) {
             var val = obj[key];
-            console.log(typeof val);
+            logger.info(typeof val);
             if (typeof val == 'object') {
                obj[key] = remapDates(val);
             } else {
                if (val == 'now()') {
                   obj[key] = new Date();
-                  console.log(' converting key ' + val + ' to now date');
+                  logger.info(' converting key ' + val + ' to now date');
                } else if (val.startsWith('Date(')) {
                   try {
                      var parts = val.split("'");
@@ -517,7 +518,7 @@ exports.parseDates = function(req, resp, next) {
             }
          }
       } catch (err) {
-         console.log(err);
+         logger.info(err);
       }
 
       return obj;

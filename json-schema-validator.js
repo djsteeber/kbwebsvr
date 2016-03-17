@@ -50,7 +50,7 @@ module.exports = function JSONSchemaValidator() {
    }
 
    function isEmail(value, bool) {
-     console.log('isEmail not implemented');
+     //console.log('isEmail not implemented');
      return true;
    }
 

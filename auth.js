@@ -9,7 +9,7 @@ var sessions = require('client-sessions');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var mongojs = require('mongojs');
-
+var logger = require('./kbwebsvr-logger');
 
 var JSON_CONTENT = {'Content-Type': 'application/json; charset=utf-8'};
 
@@ -157,14 +157,24 @@ function Auth(config) {
 
         return [
             sessions({
-            // cookie name dictates the key name added to the request object
-            // DONT CHANGE THIS OR IT BREAKS THE CODE
-            // Changing this and res.[cookieName], does set the cooking, but the read does not process accurately
-            cookieName: 'session',
-            // should be a large unguessable string
-            secret:  (config.session_secret) ? config.session_secret : 'adsflkjasojf',
-            // how long the session will stay valid in ms
-            duration: (config.session_timeout) ? config.session_timeout : 60 * 60 * 1000
+                // cookie name dictates the key name added to the request object
+                // DONT CHANGE THIS OR IT BREAKS THE CODE
+                // Changing this and res.[cookieName], does set the cooking, but the read does not process accurately
+                cookieName: 'session',
+                // should be a large unguessable string
+                secret:  (config.session_secret) ? config.session_secret : 'adsflkjasojf',
+                // how long the session will stay valid in ms
+                duration: (config.session_timeout) ? config.session_timeout : 60 * 60 * 1000,
+                cookie: {
+                    path: '/', // cookie will only be sent to requests under '/api'
+                    //maxAge: 60000, // duration of the cookie in milliseconds, defaults to duration above
+                    ephemeral: false, // when true, cookie expires when the browser closes
+                    httpOnly: true, // when true, cookie is not accessible from javascript
+                    secure: (config.session_secure_cookie) ? config.session_secure_cookie : false,
+                    //proxySecure: (config.session_secure_cookie) ? config.session_secure_cookie : false
+                    // when true, cookie will only be sent over SSL. use key 'secureProxy' instead if you handle SSL not in your node process
+                }
+
             }),
             passport.initialize(),
             passport.session(),
@@ -267,17 +277,17 @@ function Auth(config) {
                         res.end(JSON.stringify({message: "request denied"}));
                         return;
                     }
-                    console.log("user found " + JSON.stringify(user.name));
+                    logger.info("user found " + JSON.stringify(user.name));
 
                     var prCollection = self.config.db.collection('passwordReset');
                     prCollection.insert({userID: user._id, name: user.name, login: user.login, email: user.email}, function (err) {
                         if (err) {
-                            console.log(err);
+                            logger.info(err);
                             res.writeHead(500, JSON_CONTENT);
                             res.end(JSON.stringify({message: "Issue writing reset request"}));
                             return;
                         }
-                        console.log("Record inserted into prCollection");
+                        logger.info("Record inserted into prCollection");
 
                         res.writeHead(200, JSON_CONTENT);
                         res.end(JSON.stringify({message: "request accepted"}));
@@ -286,7 +296,7 @@ function Auth(config) {
 
                 });
             } catch (exc) {
-                console.log(exc);
+                logger.info(exc);
                 res.writeHead(500, JSON_CONTENT);
                 res.end(JSON.stringify({message: "error"}));
             }
@@ -330,7 +340,7 @@ function Auth(config) {
                     user.password = hashedpassword;
                     var userCollection = self.config.db.collection('users');
                     userCollection.update({_id: user._id}, user, {multi: false}, function (err, data) {
-                        console.log("updating user " + user.name.fullName + ' to ' + newPassword );
+                        logger.info("updating user " + user.name.fullName + ' to ' + newPassword );
                         if (err) {
                             res.writeHead(500, JSON_CONTENT);
                             res.end(JSON.stringify({message: "Unable to update the new password."}));

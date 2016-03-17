@@ -2,7 +2,7 @@ var fs = require('fs');
 var restify = require('restify');
 var mongojs = require('mongojs');
 var icalToolkit = require('ical-toolkit');
-
+var logger = require('./kbwebsvr-logger');
 
 var RestifyICal = function(config) {
 
@@ -76,7 +76,7 @@ var RestifyICal = function(config) {
 
 
     self.createEndPoints = function(server) {
-        console.log('adding read endpoint /calendar/shoots.ics');
+        logger.info('adding read endpoint /calendar/shoots.ics');
         server.get("/calendar/shoots.ics", self.sendICal);
     };
 };

@@ -30,6 +30,7 @@ gulp.task('clean', function() {
 gulp.task('copy-dist', [], function() {
     var jsFiles = [
         'auth.js',
+        'kbwebsvr-logger.js',
         'passportaccount.js',
         'schemas.js',
         'kbwebsvr.js',
@@ -41,6 +42,7 @@ gulp.task('copy-dist', [], function() {
         'package.json',
         'google-generated-creds.json',
         'loadUsersFromGoogleSheet.js',
+        'loadEventsFromGoogleSheet.js',
         'load-announcements.js',
         'resetPasswordJob.js',
         'sendMessagesJob.js'

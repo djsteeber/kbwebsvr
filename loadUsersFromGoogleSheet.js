@@ -2,11 +2,12 @@ var mongojs = require('mongojs');
 var kwsEnv = require('./kbwebsvr-env');
 var GoogleSpreadsheet = require("google-spreadsheet");
 var async = require('async');
+var logger = require('./kbwebsvr-logger');
 
 // spreadsheet key is the long id in the sheets URL
-var spreadsheet = new GoogleSpreadsheet(kwsEnv.googleMembersSheet);
+var spreadsheet = new GoogleSpreadsheet(kwsEnv.googleMembersSheet.sheetID);
 var spreadsheetFilter = 'lastname != ""';
-//console.log('****************TEST, remove setting last name to Honold');
+//logger.info('****************TEST, remove setting last name to Honold');
 //spreadsheetFilter = 'lastname = "Honold"';
 
 var account_creds = require('./google-generated-creds.json');
@@ -17,7 +18,7 @@ var userCollection = mongodb_inst.collection('users');
 var prCollection = mongodb_inst.collection('passwordReset');
 
 var allDone = function() {
-    console.log('done');
+    logger.info('done');
     mongodb_inst.close();
 };
 
@@ -35,10 +36,10 @@ var addResetPasswordRequest = function(user, callback) {
 
     prCollection.insert(passwordRequest, function (err, pr) {
         if (err) {
-            console.log(err);
-            console.log('user created but the reset password request did not for user ' + JSON.stringify(passwordRequest.name));
+            logger.info('user created but the reset password request did not for user ', {name: passwordRequest.name});
+            logger.error(err);
         } else {
-            console.log('reset password created ' + JSON.stringify(pr.name));
+            logger.info('reset password created ', {name: pr.name});
         }
         return callback();
     });
@@ -47,34 +48,77 @@ var addResetPasswordRequest = function(user, callback) {
 var addNewUser = function (user, callback) {
     userCollection.insert(user, function (err, insertedUser) {
         if (err) {
-            console.log("error " + err);
+            logger.error(err);
             callback();
         } else {
+            if (row.email.trim().toLowerCase() == user.login) {
+                row.uid = oid;
+            } else if (row.spouseemail.trim().toLowerCase() == user.login) {
+                row.spouseuid = oid;
+            } else {
+                logger.warn("no match for email " + user.login);
+            }
             if (insertedUser) {
                 addResetPasswordRequest(insertedUser, callback);
             } else {
-                console.log("No user returned from insert");
+                logger.info("No user returned from insert", user);
                 callback();
             }
         }
     });
 };
 
-var updateUser = function(oid, user, callback) {
+var updateUser = function(oid, user, row, callback) {
     userCollection.update({_id: oid}, user, {multi: false}, function(err) {
-        console.log("updating user");
         if (err) {
-            console.log(err);
+            logger.error(err);
+            callback();
+        } else {
+            // here we want to update the row with the UID / oid, but which one, spouse or member
+            // check login vs email to see which one
+            //right now we are just setting the ids in the row, the save will be done after the row is processed
+            if (row.email.trim().toLowerCase() == user.login) {
+                row.uid = oid;
+            } else if (row.spouseemail.trim().toLowerCase() == user.login) {
+                row.spouseuid = oid;
+            } else {
+                logger.warn("no match for email ", {login: user.login});
+            }
+
+            callback();
+
         }
-        callback();
     });
 };
 
 
+var createProcessRecordFN = function (row) {
+  return function(user, callback) {
+      userCollection.findOne({login: user.login.toLowerCase()}, function(err, foundUser) {
+          if (err) {
+              logger.error(err);
+              return callback();
+          }
+          if (foundUser) {
+              // found, we need to do an update.
+              var mergedUser = Object.assign({}, foundUser, user);
+              var oid = foundUser._id;
+              delete mergedUser._id;
+              updateUser(oid, mergedUser, row, callback);
+          } else {
+              logger.info("user not found, insert", user);
+
+              addNewUser(user, row, callback);
+          }
+      });
+  };
+};
+/*
 var processRecord = function(user, callback) {
+
     userCollection.findOne({login: user.login.toLowerCase()}, function(err, foundUser) {
         if (err) {
-            console.log(err);
+            logger.info(err);
             return callback();
         }
         if (foundUser) {
@@ -84,14 +128,14 @@ var processRecord = function(user, callback) {
             delete mergedUser._id;
             updateUser(oid, mergedUser, callback);
         } else {
-            console.log("user not found, insert");
-            console.log(user.email);
+            logger.info("user not found, insert");
+            logger.info(user.email);
 
             addNewUser(user, callback);
         }
     });
 };
-
+*/
 var createLoginRecords = function(row) {
     var loginRecords = [];
 
@@ -160,12 +204,22 @@ var processRow = function(row, callback) {
     // var create data
     var loginRecords = createLoginRecords(row);
 
-    async.forEach(loginRecords, processRecord, callback);
+    var processRecord = createProcessRecordFN(row);
+
+    async.forEach(loginRecords, processRecord,
+        function() {
+            // save the row back
+            row.save(
+                function() {
+                    logger.info("saved spreadsheet for row", {email:  row.email, uid: row.uid, spouseUid: row.spouseuid});
+                    callback();
+                });
+        });
 }
 
 var processRows = function(err, row_data) {
     if (err) {
-        console.log(err);
+        logger.error(err);
     } else {
         async.forEach(row_data,processRow, allDone);
     }
@@ -174,10 +228,24 @@ var processRows = function(err, row_data) {
 
 var authCallBack = function(err) {
     if (err) {
-        console.log(err);
+        logger.info(err);
     } else {
-        console.log("running spreadsheet query by " + spreadsheetFilter);
-        spreadsheet.getRows( 1, {query: spreadsheetFilter}, processRows);
+        spreadsheet.getInfo(function(err, info) {
+            if (err) {
+                logger.info('error getting sheet info');
+                return;
+            }
+            for (var wsInx in info.worksheets) {
+                if (info.worksheets[wsInx].title == kwsEnv.googleMembersSheet.tabName) {
+                    logger.info("running spreadsheet query by " + spreadsheetFilter);
+                    info.worksheets[wsInx].getRows({query: spreadsheetFilter}, processRows);
+                    return;
+                }
+            }
+            // this is only called if no worksheets are present
+            logger.info('no work sheet found named ' + kwsEnv.googleMembersSheet.tabName);
+            allDone();
+        });
         // query should be {query: 'email = ""'}
     }
 };
@@ -191,7 +259,6 @@ if (process.argv.length > 2) {
 
 spreadsheet.useServiceAccountAuth(account_creds, authCallBack);
 
-
-
+//TODO:  fix the async problem,  program is ending before the data is applied to the spreadsheet.
 
 
