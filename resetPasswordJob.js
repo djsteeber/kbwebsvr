@@ -25,13 +25,7 @@ var requestCollection = mongodb_inst.collection('passwordReset');
 
 
 // setup a timer to run the function
-var transporter = nodemailer.createTransport(ses({
-    accessKeyId: kwsEnv.aws_ses_key,
-    secretAccessKey: kwsEnv.aws_ses_secret,
-    region: kwsEnv.aws_ses_region | 'us-west-2',
-    rateLimit: kwsEnv.aws_ses_rate_limit | 10
-}));
-
+var transporter = nodemailer.createTransport(ses(kwsEnv.aws_ses_options));
 
 
 var generateRandomPassword = function() {
@@ -66,13 +60,18 @@ var sendEmail = function(requestID, user, password, callback) {
         password: password
     };
 
-    transporter.sendMail({
+    var mailItem = {
         from: 'kenoshabowmen@gmail.com',
+        replyTo: 'kenoshabowmen@gmail.com',
         to: user.email,
         subject: 'KenoshaBowmen Website password reset request',
         text: emailTemplate.text(data),
         html: emailTemplate.html(data)
-    }, function (err, info) {
+    };
+
+    logger.info('trying to send email ', mailItem);
+
+    transporter.sendMail(mailItem, function (err, info) {
         if (err) {
             logger.info("error sending the email");
             logger.error(err);
@@ -116,9 +115,17 @@ var processRequest = function(request, callback) {
     });
 };
 
+
+
+//specified in minutes, defaults to 5 minutes
+var runInterval = (kwsEnv.reset_password_interval || 5) * 60 * 1000;
+
+
 var allDone = function(err) {
     // don't close this here
-    //mongodb_inst.close();
+    if (runInterval < 0 ) {
+        mongodb_inst.close();
+    }
     return;
 };
 
@@ -136,11 +143,15 @@ var processAll = function() {
 
 };
 
-//specified in minutes, defaults to 5 minutes
-var runInterval = (kwsEnv.reset_password_interval || 5) * 60 * 1000;
 
-logger.info('Starting resetPasswordJob, with an check interval of ' + runInterval + 'ms. ');
-setInterval(processAll, runInterval);
+if (runInterval < 0) {
+    logger.info('Running resetPasswordJob once since interval is less than 0');
+    processAll();
+    // just run once
+} else {
+    logger.info('Starting resetPasswordJob, with an check interval of ' + runInterval + 'ms. ');
+    setInterval(processAll, runInterval);
+}
 
 
 

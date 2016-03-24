@@ -26,13 +26,7 @@ var logger = new winston.Logger({
 var mongodb_inst = mongojs(kwsEnv.mongodb_uri, [],{connectionTimeout: 3000} );
 
 // setup a timer to run the function
-var transporter = nodemailer.createTransport(ses({
-    accessKeyId: kwsEnv.aws_ses_key,
-    secretAccessKey: kwsEnv.aws_ses_secret,
-    region: (kwsEnv.aws_region || 'us-west-2'),  //TODO put these in the config file
-    pool: true,
-    rateLimit: (kwsEnv.mail_rate_limit || 10)
-}));
+var transporter = nodemailer.createTransport(ses(kwsEnv.aws_ses_options));
 
 
 var removeRequest = function(requestID, callback) {
@@ -146,7 +140,7 @@ var processAll = function() {
 };
 
 //specified in minutes, defaults to 5 minutes
-var runInterval = (kwsEnv.send_message_interval || 5) * 60 * 1000;
+var runInterval = ((kwsEnv.send_message_interval) ? kwsEnv.send_message_interval : 5) * 60 * 1000;
 
 
 // does not work, not sure why.  Leave in for now.  Just do not close connection
