@@ -78,7 +78,7 @@ var userProfile = {
 };
 
 var message = {
-     to: {isString: true, isRequired: true, isOneOf: [['ALL MEMBERS', 'MEMBERS', 'BOARD', 'OFFICERS', 'ADMIN']]}
+     to: {isString: true, isRequired: true, isOneOf: [['ALL MEMBERS', 'MEMBER', 'BOARD', 'OFFICER', 'ADMIN']]}
     ,subject: reqString
     ,body: reqString
     ,sender: {pointsTo: 'users'}

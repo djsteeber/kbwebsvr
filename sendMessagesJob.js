@@ -58,7 +58,11 @@ var sendEmail = function(user, message, callback) {
         text: text,
         html: html
     };
-
+/* not quite working yet.  reply to yields empty string in to on email reply.
+    if (message.createdBy && (message.createdBy.indexOf('@') > -1)) {
+        msg.replyTo = message.createdBy;
+    }
+*/
     if (kwsEnv.do_not_send_email) {
         //TODO add in no send option
         logger.info('skip sending ... ' + JSON.stringify(msg));
@@ -89,7 +93,13 @@ var processRequest = function(message, prCallback) {
     // for board members, we need to put an attribute on users that says board member
     // probably better to have a role
 
-    var query = {email: {"$ne": ""}};
+    var roles = message.to;
+    //short term fix until everyone updates the application.
+    if (roles == 'ALL MEMBERS') {
+        roles = 'MEMBER';
+    }
+
+    var query = {email: {"$ne": ""}, roles: roles};
     /*
     query = {login: 'djsteeber@yahoo.com'};
     if (message.to == 'ALL MEMBERS') {
