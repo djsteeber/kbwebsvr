@@ -12,7 +12,7 @@ var announcements = [
         ,
 
         start : new Date("January 1, 2016 01:00"),
-        end : new Date("March 15, 2016 23:00")}
+        end : new Date("March 26, 2016 23:00")}
 
 ];
 

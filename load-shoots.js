@@ -7,7 +7,6 @@ var phash = require('password-hash-and-salt');
 var now = Date.now();
 
 var shoots = [
-        /*
     { name: "Fran's Indoor Animal League",
         description: "10 week Indoor League.",
         shootType: "League",
@@ -253,7 +252,6 @@ var shoots = [
         created: now,
         modified: now
     },
-    */
     { name: "Spring Outdoor Field League",
         description: "Outdoor league with NFAA and Hunter round targets.  10 week handicapped team competition.",
         shootType: "Members Only League",
@@ -266,7 +264,7 @@ var shoots = [
         scheduleEndDate: new Date("July 05, 2016 20:00"),
         created: now,
         modified: now
-    },
+    }
 
 ];
 

@@ -193,7 +193,7 @@ function Auth(config) {
                 }
             }
         ];
-    }
+    };
 
     self.createEndPoints = function(server) {
         var loginRoute = function(req, res, next) {

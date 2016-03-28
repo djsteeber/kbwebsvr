@@ -19,6 +19,7 @@
   "homepage": "https://github.com/djsteeber/kbwebsvr",
   "dependencies": {
     "async": "^1.5.2",
+    "aws-sdk": "^2.2.45",
     "body-parser": "^1.14.2",
     "client-sessions": "^0.7.0",
     "fs-extra": "^0.26.4",

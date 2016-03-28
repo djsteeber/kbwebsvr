@@ -222,7 +222,10 @@ var updateItem = function (req, res, next) {
    var oid = mongojs.ObjectId(req.params.id);
    var collection = getCollection(req);
 
-   obj.modified = Date.now();
+   obj.modified = new Date();
+   if (req.user && req.user.login) {
+      obj.modifiedBy = req.user.login;
+   }
    collection.update({_id: oid}, obj, {multi: false}, function (err, data) {
       if (err) {
          res.writeHead(400, JSON_CONTENT);
@@ -344,9 +347,13 @@ logger.info('adding new item');
    item = convertAndStoreFiles(item, collectionName);
 
    // append the created date to the item
-   var now = Date.now();
+   var now = new Date();
    item.created = now;
    item.updated = now;
+   if (req.user && req.user.login) {
+      item.createdBy = req.user.login;
+      item.modifiedBy = req.user.login;
+   }
    collection.save(item, function (err, data) {
       logger.info("done with save of item");
       if (err) {
