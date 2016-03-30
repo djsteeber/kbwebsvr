@@ -26,13 +26,7 @@ var logger = new winston.Logger({
 var mongodb_inst = mongojs(kwsEnv.mongodb_uri, [],{connectionTimeout: 3000} );
 
 // setup a timer to run the function
-var transporter = nodemailer.createTransport(ses({
-    accessKeyId: kwsEnv.aws_ses_key,
-    secretAccessKey: kwsEnv.aws_ses_secret,
-    region: (kwsEnv.aws_region || 'us-west-2'),  //TODO put these in the config file
-    pool: true,
-    rateLimit: (kwsEnv.mail_rate_limit || 10)
-}));
+var transporter = nodemailer.createTransport(ses(kwsEnv.aws_ses_options));
 
 
 var removeRequest = function(requestID, callback) {
@@ -64,7 +58,11 @@ var sendEmail = function(user, message, callback) {
         text: text,
         html: html
     };
-
+/* not quite working yet.  reply to yields empty string in to on email reply.
+    if (message.createdBy && (message.createdBy.indexOf('@') > -1)) {
+        msg.replyTo = message.createdBy;
+    }
+*/
     if (kwsEnv.do_not_send_email) {
         //TODO add in no send option
         logger.info('skip sending ... ' + JSON.stringify(msg));
@@ -95,7 +93,13 @@ var processRequest = function(message, prCallback) {
     // for board members, we need to put an attribute on users that says board member
     // probably better to have a role
 
-    var query = {email: {"$ne": ""}};
+    var roles = message.to;
+    //short term fix until everyone updates the application.
+    if (roles == 'ALL MEMBERS') {
+        roles = 'MEMBER';
+    }
+
+    var query = {email: {"$ne": ""}, roles: roles};
     /*
     query = {login: 'djsteeber@yahoo.com'};
     if (message.to == 'ALL MEMBERS') {
@@ -146,7 +150,7 @@ var processAll = function() {
 };
 
 //specified in minutes, defaults to 5 minutes
-var runInterval = (kwsEnv.send_message_interval || 5) * 60 * 1000;
+var runInterval = ((kwsEnv.send_message_interval) ? kwsEnv.send_message_interval : 5) * 60 * 1000;
 
 
 // does not work, not sure why.  Leave in for now.  Just do not close connection
