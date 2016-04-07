@@ -136,6 +136,68 @@ var processRecord = function(user, callback) {
     });
 };
 */
+
+/*
+ member: {isBoolean:true},
+ officer: {isBoolean: true},
+ board: {isBoolean: true},
+ rangeCaptain: {isBoolean:true},
+ bartender: {isBoolean: true},
+ boardPosition: {isString: true}
+
+ */
+var OFFICER_LIST = ['PRESIDENT', 'VICE-PRESIDENT', 'TREASURER', 'SUB_TREASURER', 'SECRETARY'];
+var REMAINING_BOARD_LIST = ['PRACTICE BUTTS', 'MOWING', 'TARGETS', 'EQUIPMENT', 'CLUBHOUSE', 'BAR AGENT'];
+
+function isOfficer(role) {
+    return (OFFICER_LIST.indexOf(role) != -1);
+}
+
+function isRangeCaptain(role) {
+    return ((role === 'INDOOR') || role.startsWith('RANGE'));
+}
+
+function isBoard(role) {
+    return (REMAINING_BOARD_LIST.indexOf(role) != -1);
+}
+
+function isBartender(role) {
+    return (role === 'BARTENDER');
+}
+
+function updateRoles(user, roles) {
+    var rolesAry = (roles) ? roles.split(',') : [];
+
+    user.roles = ['MEMBER'];
+    rolesAry.forEach(function(item) {
+        var role = item.trim().toUpperCase();
+        console.log(role);
+
+        if (isOfficer(role)) {
+            user.board = true;
+            user.officer = true;
+            user.clubPosition = role;
+        } else if (isRangeCaptain(role)) {
+            user.board = true;
+            user.rangeCaptain = true;
+            user.clubPosition = role;
+        } else if (isBoard(role)) {
+            user.board = true;
+            user.clubPostion = role;
+        } else if (isBartender(role)) {
+            user.bartender = true;
+            user.clubPosition = role;
+        } else {
+            user.clubPostion = 'MEMBER';
+        }
+        
+        user.roles.push(role);
+    });
+    
+    return user;
+}
+
+
 var createLoginRecords = function(row) {
     var loginRecords = [];
 
@@ -173,6 +235,7 @@ var createLoginRecords = function(row) {
             hours: (row.hours) ? parseFloat(row.hours).toFixed(2) : 0,
             exempt: (row.exempt && (row.exempt == 'Lifetime')) ? true : false
         };
+        user = updateRoles(user,row.roles);
         loginRecords.push(user);
     }
     if (row.spouseemail) {
@@ -194,6 +257,7 @@ var createLoginRecords = function(row) {
             hours: (row.hours) ? parseFloat(row.hours).toFixed(2) : 0,
             exempt: (row.exempt && (row.exempt == 'Lifetime')) ? true : false
         };
+        spouse = updateRoles(spouse, row.spouseroles);
         loginRecords.push(spouse);
     }
 

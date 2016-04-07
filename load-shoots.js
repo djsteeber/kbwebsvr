@@ -180,6 +180,7 @@ var shoots = [
         schedule: [
             { start: new Date("April 11, 2016 15:00"), end: new Date("April 11, 2016 21:00"), repeat: 'WEEKLY', repeatCount: 10 }
         ],
+        flyer: { url: "/misc_docs/shoots/2016SpringLeague.png", name: "2016SpringLeague.png" },
         scheduleStartDate: new Date("April 11, 2016 15:00"),
         scheduleEndDate: new Date("June 13, 2016 21:00"),
         created: now,
@@ -205,6 +206,7 @@ var shoots = [
         schedule: [
             { start: new Date("May 28, 2016 08:00"), end: new Date("May 28, 2016 15:00"), repeat: 'DAILY', repeatCount: 3 }
         ],
+        flyer: { url: "/misc_docs/shoots/2016MemorialDayShoot.png", name: "2016MemorialDayShoot.png" },
         scheduleStartDate: new Date("May 28, 2016 08:00"),
         scheduleEndDate: new Date("May 30, 2016 15:00"),
         created: now,
@@ -217,6 +219,7 @@ var shoots = [
         schedule: [
             { start: new Date("June 11, 2016 08:00"), end: new Date("June 11, 2016 15:00"), repeat: 'DAILY', repeatCount: 2 }
         ],
+        flyer: { url: "/misc_docs/shoots/2016LBLLeague.png", name: "2016LBLLeague.png" },
         scheduleStartDate: new Date("June 11, 2016 08:00"),
         scheduleEndDate: new Date("June 12, 2016 15:00"),
         created: now,
@@ -229,6 +232,7 @@ var shoots = [
         schedule: [
             { start: new Date("August 03, 2016 15:00"), end: new Date("August 03, 2016 21:00"), repeat: 'WEEKLY', repeatCount: 10 }
         ],
+        flyer: { url: "/misc_docs/shoots/2016TowerLeague.png", name: "2016TowerLeague.png" },
         scheduleStartDate: new Date("August 3, 2016 08:00"),
         scheduleEndDate: new Date("September 14, 2016 15:00"),
         created: now,
