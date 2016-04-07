@@ -146,7 +146,7 @@ var processRecord = function(user, callback) {
  boardPosition: {isString: true}
 
  */
-var OFFICER_LIST = ['PRESIDENT', 'VICE-PRESIDENT', 'TREASURER', 'SUB_TREASURER', 'SECRETARY'];
+var OFFICER_LIST = ['PRESIDENT', 'VICE-PRESIDENT', 'TREASURER', 'SUB-TREASURER', 'SECRETARY'];
 var REMAINING_BOARD_LIST = ['PRACTICE BUTTS', 'MOWING', 'TARGETS', 'EQUIPMENT', 'CLUBHOUSE', 'BAR AGENT'];
 
 function isOfficer(role) {
