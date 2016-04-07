@@ -31,7 +31,6 @@ gulp.task('copy-dist', [], function() {
     var jsFiles = [
         'auth.js',
         'kbwebsvr-logger.js',
-        'passportaccount.js',
         'schemas.js',
         'kbwebsvr.js',
         'secure-doc.js',

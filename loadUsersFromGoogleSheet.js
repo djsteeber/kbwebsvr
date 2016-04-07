@@ -169,9 +169,10 @@ function updateRoles(user, roles) {
     var rolesAry = (roles) ? roles.split(',') : [];
 
     user.roles = ['MEMBER'];
+
+    user.clubPostion = 'MEMBER';
     rolesAry.forEach(function(item) {
         var role = item.trim().toUpperCase();
-        console.log(role);
 
         if (isOfficer(role)) {
             user.board = true;
@@ -187,8 +188,6 @@ function updateRoles(user, roles) {
         } else if (isBartender(role)) {
             user.bartender = true;
             user.clubPosition = role;
-        } else {
-            user.clubPostion = 'MEMBER';
         }
         
         user.roles.push(role);
@@ -270,8 +269,12 @@ var processRow = function(row, callback) {
 
     var processRecord = createProcessRecordFN(row);
 
+    //issue might be here as the row is calling the callback of forEach but back at process row, which would end process row.
     async.forEach(loginRecords, processRecord,
-        function() {
+        function(err) {
+            if (err) {
+                console.log(err);
+            }
             // save the row back
             row.save(
                 function() {
@@ -279,7 +282,7 @@ var processRow = function(row, callback) {
                     callback();
                 });
         });
-}
+};
 
 var processRows = function(err, row_data) {
     if (err) {
