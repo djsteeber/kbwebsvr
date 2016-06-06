@@ -11,6 +11,9 @@
  *
  */
 
+
+//TODO:  URI on return objects is showing localhost:3000.  It show where the request originated from
+
 var fs = require('fs');
 var restify = require('restify');
 var restifyCookies = require('restify-cookies');
@@ -45,17 +48,18 @@ server.use(restify.queryParser());
 server.use(restify.bodyParser({mapParams: false}));
 server.use(restifyCookies.parse);
 server.use(auth.initialize());
-server.use(rmep.parseDates);
+server.use(rmep.parseDates);+
 //server.use(restify.CORS());
 
 
 // secure all of the write / delete / update endpoints
 /// testing, turning off the auth functionality check
-['POST', 'PUT', 'DELETE'].forEach(function(method) {
-    auth.secure( /^\/rest\/.*/g, method, ['ADMIN']);
-});
+//['POST', 'PUT', 'DELETE'].forEach(function(method) {
+//    auth.secure( /^\/rest\/.*/g, method, ['ADMIN']);
+//});
+    logger.error("HEY ! You need to secure the endpoints again")
 
-auth.secure( /^\/rest\/users.*/g, 'GET', ['ADMIN']);
+// TODO add back in  auth.secure( /^\/rest\/users.*/g, 'GET', ['ADMIN']);
 auth.createEndPoints(server);
 
 

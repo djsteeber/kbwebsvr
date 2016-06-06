@@ -104,6 +104,8 @@ function addLocationTo(items, req) {
 function addLocationToItem(item, req) {
    basePath = protocol + '://' + req.headers.host + req._url.pathname;
 
+   console.log("%j", req.headers);
+
    item.uri = basePath + '/' + item._id;
    return item;
 }
@@ -140,6 +142,67 @@ var convertDates = function(obj) {
    }
    return rtn;
 };
+
+/**
+ * This function will generate a mongo query string based on the request
+ * There are two types of query requests.   
+ *     1.  Simple AND Query - Field Names and Values are specified in the request data
+ *     2.  Complex Query -  Boolean logic Query is sent
+ * This function will return a structure with 3 fields
+ *     query - query json structure
+ *     sort - the field to sort by TODO maybe make this more complex if we need to sort by multiple fields
+ *     limit - max number of rows to return
+ *     offset - not yet implemented, but the offset in the returned recordset to start counting to the limit
+ * Note:  offset and limit do not really make sense without a sort.  You may get inconsistent results
+ */
+var createQuery = function(reqData) {
+   var query;
+
+   if (reqData.q) {
+      query = reqData.q;
+   } else {
+      query = reqData;
+      delete query.sort;
+      delete query.limit;
+      delete query.offset;
+   }
+   
+   if (! query) {
+      query = {};
+   }
+   
+   //TODO  This needs to be smarter, and based on the schema.  This will fail if nested structure
+   for (var key in query) {
+      if (query[key] === 'true') {
+         query[key] = true;
+      } else if (query[key] === 'false') {
+         query[key] = false;
+      }
+   }
+   
+   return query;
+};
+
+var createQueryOptions = function(reqData) {
+   var options = {};
+   
+   var sort =  (reqData.sort) ? reqData.sort : null;
+   var limit =  (reqData.limit) ? reqData.limit : null;
+   
+   limit = (limit && (typeof limit == 'string')) ? parseInt(limit) : limit;
+   if (sort) {
+      options.sort = {};
+      for (var sortKey in sort) {
+         options.sort[sortKey] = (typeof sort[sortKey] === "string") ? parseInt(sort[sortKey]) : sort[sortKey];
+      }
+   }
+   if (limit) {
+      options.limit = limit;
+   }
+
+   return options;
+}
+
 /**
  * handler for get on the collection
  */
@@ -148,47 +211,35 @@ logger.info("gettting items\n");
    var collection = getCollection(req);
    var collectionName = getCollectionName(req);
    var reqData = getRequestData(req);
-   var query = (reqData.q) ? reqData.q : {};
-   var sort =  (reqData.sort) ? reqData.sort : null;
-   var limit =  (reqData.limit) ? reqData.limit : null;
-   var options = {};
+   var queryOptions = createQueryOptions(reqData);
+   var query = createQuery(reqData);
 
-   limit = (limit && (typeof limit == 'string')) ? parseInt(limit) : limit;
-   if (sort) {
-      options.sort = {};
-      for (var sortKey in sort) {
-         options.sort[sortKey] = (typeof sort[sortKey] == "string") ? parseInt(sort[sortKey]) : sort[sortKey];
-      }
-   }
-   if (limit) {
-      options.limit = limit;
-   }
-
+   
    //var query = getRequestData(req);
    // right now just use all of the request body as the query object
    // might want to add in field selection, but that is an add on as the front end can ignore
    //logger.info(req);
    logger.info("find in collection " + collectionName)
    logger.info("   query " + JSON.stringify(query));
-   logger.info("   options " + JSON.stringify(options));
-try {
-//   collection.find(query, null, options, function (err, items) {
-   collection.find(query, null, options, function (err, items) {
-      if (err) {
-         logger.info(err);
-      }
-//logger.info();
-      //add in location
-      var data = addLocationTo(items, req);
+   logger.info("   options " + JSON.stringify(queryOptions));
+   try {
+   //   collection.find(query, null, options, function (err, items) {
+      collection.find(query, null, queryOptions, function (err, items) {
+         if (err) {
+            logger.info(err);
+         }
+   //logger.info();
+         //add in location
+         var data = addLocationTo(items, req);
 
-      res.writeHead(200, JSON_CONTENT);
-      res.end(JSON.stringify(data));
-      logger.info("items sent: gettting items\n");
-      return next();
-   });
-} catch (findexc) {
-   logger.info(findexc);
-}
+         res.writeHead(200, JSON_CONTENT);
+         res.end(JSON.stringify(data));
+         logger.info("items sent: gettting items\n");
+         return next();
+      });
+   } catch (findexc) {
+      logger.info(findexc);
+   }
 };
 
 
@@ -484,12 +535,12 @@ exports.createEndPoint = function(server, epTypes, config) {
 
 exports.catchAllErrors = function(req, res, next) {
    var rtn;
-
+   var start = Date.now();
+   // add some sort of session id, so we know what to log and which request is being logged
    try {
       rtn = next();
    } catch (exc) {
       logger.info(exc);
-
       res.writeHead(401, JSON_CONTENT);
       res.end(JSON.stringify(exc));
    }

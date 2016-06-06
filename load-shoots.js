@@ -272,6 +272,23 @@ var shoots = [
 
 ];
 
+shoots = [
+    {
+        name: "WAA State Field Championship",
+        description: 'WAA State Field Championship hosted by Wisconsin Archery Alliance and Kenosha Bowmen. <br/><a href="/misc_docs/shoots/2016WAAState.pdf">PDF Flyer, More information</a>',
+        shootType: "Shoot",
+        range: ["Range 1", "Range 2", "Range 3"],
+        schedule: [
+            { start: new Date("July 09, 2016 08:00"), end: new Date("July 09, 2016 21:00"), repeat: 'DAILY', repeatCount: 2 }
+        ],
+        flyer: { url: "/misc_docs/shoots/2016WAAState.png", name: "2016WAAState.png" },
+        scheduleStartDate: new Date("July 09, 2016 08:00"),
+        scheduleEndDate: new Date("July 10, 2016 20:00"),
+        created: now,
+        modified: now
+    }
+
+];
 
 var async = require('async');
 

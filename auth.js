@@ -352,16 +352,8 @@ function Auth(config) {
                 });
             });
         });
-
     };
-
-
-
-
 }
-
-
-
 
 
 module.exports = Auth;
